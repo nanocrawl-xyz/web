@@ -8,8 +8,8 @@
 // by constructing EIP-3009 authorizations directly from this metadata.
 
 import { NextResponse } from 'next/server'
-import nanocrawlConfig, { priceForPath } from '../../../nanocrawl.config'
-import { ARC_TESTNET, X402_SCHEME, EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from '../../../shared/config'
+import nanocrawlConfig, { priceForPath } from '../../nanocrawl.config'
+import { ARC_TESTNET, X402_SCHEME, EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from '../../shared/config'
 
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'

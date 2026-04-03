@@ -66,7 +66,7 @@ HEADER=$(curl -s -I -H "x-nanocrawl-capable: true" "$BASE_URL/products/1" \
 [ -n "$HEADER" ] && pass "402 response has PAYMENT-REQUIRED header" || fail "402 response missing PAYMENT-REQUIRED header"
 
 # ── Test 8: robots.txt includes NanoCrawl payment fields ─────────────────
-ROBOTS=$(curl -s "$BASE_URL/api/robots.txt")
+ROBOTS=$(curl -s "$BASE_URL/robots.txt")
 HAS_FEE=$(echo "$ROBOTS" | grep -o "Crawl-fee:" || true)
 HAS_NETWORK=$(echo "$ROBOTS" | grep -o "Payment-Network:" || true)
 [ -n "$HAS_FEE" ] && [ -n "$HAS_NETWORK" ] \
