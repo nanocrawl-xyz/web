@@ -1,59 +1,83 @@
-// Node.js runtime — triggers on-chain USDC withdrawal from Gateway to merchant wallet.
-// This is On-Chain Moment 3 in the demo arc.
+// Node.js runtime — merchant withdrawal via Circle Gateway CCTP.
 //
-// POST /api/withdraw  → { txHash, explorerUrl, amount, network }
+// POST /api/withdraw
+// Body: { amount: string, destinationChain?: string, recipientAddress?: string }
 //
-// Uses viem to call Gateway Minter's gatewayMint() function.
-// TODO: This requires Circle's withdrawal flow (burn intent + attestation + gatewayMint).
-// Placeholder structure — fill in the actual withdrawal flow with Circle SDK or viem.
+// Uses GatewayClient.withdraw() which handles the full CCTP flow:
+//   1. Signs a BurnIntent with the merchant's key
+//   2. POSTs to Circle Gateway /transfer
+//   3. Circle burns on Arc, mints on destination chain
+//
+// Default destination: baseSepolia (easiest testnet to verify)
 
 export const runtime = 'nodejs'
 
-import { NextResponse } from 'next/server'
-import nanocrawlConfig from '../../../nanocrawl.config'
-import { ARC_TESTNET } from '../../../shared/config'
-import { fetchGatewayBalance } from '../../../lib/settle'
-import { unitsToUsdc } from '../../../nanocrawl.config'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST() {
-  if (!nanocrawlConfig.sellerPrivateKey) {
-    return NextResponse.json({ error: 'Seller private key not configured' }, { status: 500 })
+const SUPPORTED_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji']
+
+export async function POST(request: NextRequest) {
+  const sellerKey = process.env.NANOCRAWL_SELLER_PRIVATE_KEY
+  if (!sellerKey) {
+    return NextResponse.json({ error: 'NANOCRAWL_SELLER_PRIVATE_KEY not configured' }, { status: 500 })
+  }
+
+  let body: { amount?: string; destinationChain?: string; recipientAddress?: string }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const { amount, destinationChain = 'baseSepolia', recipientAddress } = body
+
+  if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+    return NextResponse.json(
+      { error: 'amount must be a positive number string (e.g. "0.5")' },
+      { status: 400 },
+    )
+  }
+
+  if (!SUPPORTED_CHAINS.includes(destinationChain)) {
+    return NextResponse.json({
+      error: `Unsupported destinationChain. Supported: ${SUPPORTED_CHAINS.join(', ')}`,
+    }, { status: 400 })
+  }
+
+  // @ts-ignore — SDK types may not fully align with our tsconfig
+  const { GatewayClient } = await import('@circle-fin/x402-batching/client')
+
+  const client = new GatewayClient({
+    chain: 'arcTestnet',
+    privateKey: sellerKey.startsWith('0x') ? sellerKey : `0x${sellerKey}`,
+  })
+
+  // Check available gateway balance before attempting
+  const balances = await client.getBalances()
+  const available = parseFloat(balances?.gateway?.formattedAvailable ?? '0')
+  if (available < parseFloat(amount)) {
+    return NextResponse.json({
+      error: `Insufficient gateway balance. Available: $${available.toFixed(6)} USDC, Requested: $${amount} USDC`,
+    }, { status: 400 })
   }
 
   try {
-    const balanceUnits = await fetchGatewayBalance(
-      nanocrawlConfig.sellerWallet,
-      ARC_TESTNET.domainId,
-    )
+    const result = await client.withdraw(amount, {
+      chain: destinationChain,
+      ...(recipientAddress ? { recipient: recipientAddress } : {}),
+    })
 
-    if (balanceUnits === '0') {
-      return NextResponse.json({ error: 'No balance to withdraw' }, { status: 400 })
-    }
-
-    // TODO: Implement withdrawal using Circle SDK or viem
-    // The withdrawal flow for same-chain (Arc Testnet → Arc Testnet):
-    //   1. Call Circle Gateway /v1/transfer to initiate burn intent
-    //   2. Poll for attestation
-    //   3. Call gatewayMint() on Gateway Minter contract with attestation payload
-    //
-    // Reference:
-    //   - Gateway Minter: ARC_TESTNET.gatewayMinter
-    //   - Circle CCTP docs: https://developers.circle.com/gateway
-    //
-    // For now, return a placeholder so the dashboard Withdraw button is wired up.
-    // Replace this block with the actual implementation.
-
-    const txHash = '0xTODO_IMPLEMENT_WITHDRAWAL'
-    const explorerUrl = `${ARC_TESTNET.explorer}/tx/${txHash}`
+    const mintTxHash = result?.mintTxHash ?? result?.hash ?? String(result)
 
     return NextResponse.json({
-      txHash,
-      explorerUrl,
-      amount: unitsToUsdc(balanceUnits).toString(),
-      network: nanocrawlConfig.network,
+      success: true,
+      amount,
+      destinationChain,
+      mintTxHash,
     })
   } catch (err) {
-    console.error('Withdrawal error:', err)
-    return NextResponse.json({ error: 'Withdrawal failed' }, { status: 500 })
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('Withdrawal error:', msg)
+    return NextResponse.json({ error: msg }, { status: 502 })
   }
 }

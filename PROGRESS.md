@@ -23,11 +23,12 @@ The full x402 payment flow is confirmed end-to-end against Circle Gateway testne
 | robots.txt with payment metadata | ✅ | Serves at `/robots.txt` with full Circle metadata |
 | Merchant dashboard (SSE) | ✅ | Live payment stream, shows balances |
 | Mock crawler (`npm run crawl`) | ✅ | Uses same GatewayClient as Person A's MCP server |
-| Unit tests (82 passing) | ✅ | classify, x402, config, payments-store |
+| Unit tests (93 passing) | ✅ | classify, x402, config, payments-store, verify-and-serve |
 | Smoke tests (10/10) | ✅ | Pre-demo checklist |
 | Vercel deployment | ✅ | https://nanocrawl.vercel.app — 10/10 smoke tests pass |
 | Redis persistence (Vercel KV) | ✅ | KV_REDIS_URL — dashboard persists across Lambda invocations |
-| Withdrawal flow | ⏳ | Stub in place, Circle CCTP not implemented |
+| Withdrawal flow | ✅ | GatewayClient.withdraw() via Circle CCTP to baseSepolia |
+| Cloudflare Worker template | ✅ | `templates/cloudflare-worker.ts` — standalone, no deps |
 
 ---
 
@@ -118,7 +119,9 @@ Base64-encoded JSON with `x402Version`, `payload.authorization`, `payload.signat
 
 - [x] Vercel deploy — https://nanocrawl.vercel.app
 - [x] Redis persistence — payments survive cold starts, dashboard shows live revenue
-- [ ] Cloudflare Worker template (`templates/cloudflare-worker.ts`) — merchant artefact
+- [x] Cloudflare Worker template (`templates/cloudflare-worker.ts`) — merchant artefact
+- [x] Withdrawal via Circle CCTP (`app/api/withdraw/route.ts`)
+- [x] Robustness tests (`lib/__tests__/verify-and-serve.test.ts`) — 93 tests total
 - [ ] `.well-known/ai-pay` JSON endpoint
-- [ ] Withdrawal via Circle CCTP (`app/api/withdraw/route.ts`)
-- [ ] Landing page + architecture diagram (`public/architecture.png`)
+- [ ] Landing page polish — buyer tooling + merchant tooling sections
+- [ ] Architecture diagram (`public/architecture.png`)

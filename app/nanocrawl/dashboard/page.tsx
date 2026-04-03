@@ -19,7 +19,7 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [withdrawing, setWithdrawing] = useState(false)
-  const [withdrawResult, setWithdrawResult] = useState<{ txHash: string; explorerUrl: string } | null>(null)
+  const [withdrawResult, setWithdrawResult] = useState<{ mintTxHash: string; amount: string; destinationChain: string } | null>(null)
   const [withdrawError, setWithdrawError] = useState<string | null>(null)
 
   // Subscribe to SSE stream
@@ -41,12 +41,17 @@ export default function DashboardPage() {
     setWithdrawError(null)
     setWithdrawResult(null)
     try {
-      const res = await fetch('/api/withdraw', { method: 'POST' })
+      const amount = data?.balanceUsdc.toFixed(6) ?? '0'
+      const res = await fetch('/api/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, destinationChain: 'baseSepolia' }),
+      })
       const json = await res.json()
       if (!res.ok) {
         setWithdrawError(json.error ?? 'Withdrawal failed')
       } else {
-        setWithdrawResult({ txHash: json.txHash, explorerUrl: json.explorerUrl })
+        setWithdrawResult({ mintTxHash: json.mintTxHash, amount: json.amount, destinationChain: json.destinationChain })
       }
     } catch {
       setWithdrawError('Network error')
@@ -102,16 +107,9 @@ export default function DashboardPage() {
           {withdrawing ? 'Withdrawing…' : 'Withdraw'}
         </button>
         {withdrawResult && (
-          <div className="text-sm text-green-400">
-            Withdrawn.{' '}
-            <a
-              href={withdrawResult.explorerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              View on Blockscout
-            </a>
+          <div className="text-sm text-green-400 space-y-1">
+            <p>Withdrawn ${withdrawResult.amount} USDC → {withdrawResult.destinationChain}</p>
+            <p className="font-mono text-xs text-gray-400 break-all">Mint tx: {withdrawResult.mintTxHash}</p>
           </div>
         )}
         {withdrawError && (
