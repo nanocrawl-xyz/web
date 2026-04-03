@@ -1,9 +1,0 @@
-{
-  "env": {
-    "NANOCRAWL_SELLER_PRIVATE_KEY": "@nanocrawl-seller-private-key",
-    "NANOCRAWL_SELLER_WALLET": "@nanocrawl-seller-wallet",
-    "NANOCRAWL_DEFAULT_PRICE_USDC": "@nanocrawl-default-price-usdc",
-    "NANOCRAWL_NETWORK": "@nanocrawl-network",
-    "NEXT_PUBLIC_APP_URL": "@nanocrawl-app-url"
-  }
-}
