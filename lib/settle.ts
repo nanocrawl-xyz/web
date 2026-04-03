@@ -26,7 +26,8 @@ export async function settlePayment(
   paymentPayload: PaymentPayload,
   requirements: PaymentRequirements,
 ): Promise<SettleResult> {
-  const data = (await facilitator.settle(paymentPayload, requirements)) as SettlementResponse
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = (await facilitator.settle(paymentPayload as any, requirements as any)) as SettlementResponse
   return { settled: data.success, response: data }
 }
 
