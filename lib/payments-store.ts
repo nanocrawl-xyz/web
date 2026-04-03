@@ -12,17 +12,23 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import type { PaymentEvent } from '../shared/types'
 
-const DB_PATH =
-  process.env.NODE_ENV === 'production'
-    ? '/tmp/nanocrawl-payments.db'
-    : path.join(process.cwd(), 'nanocrawl-payments.db')
+// DB_PATH is resolved lazily inside getDb() so that NANOCRAWL_DB_PATH env var
+// set in tests (after module import) is respected on every new connection.
+function resolveDbPath(): string {
+  return (
+    process.env.NANOCRAWL_DB_PATH ??
+    (process.env.NODE_ENV === 'production'
+      ? '/tmp/nanocrawl-payments.db'
+      : path.join(process.cwd(), 'nanocrawl-payments.db'))
+  )
+}
 
 // Singleton DB connection (module-level, shared across requests in the same process)
 let _db: ReturnType<typeof Database> | null = null
 
 function getDb(): ReturnType<typeof Database> {
   if (_db) return _db
-  _db = new Database(DB_PATH)
+  _db = new Database(resolveDbPath())
   _db.exec(`
     CREATE TABLE IF NOT EXISTS payments (
       id           TEXT PRIMARY KEY,
@@ -31,7 +37,7 @@ function getDb(): ReturnType<typeof Database> {
       amount_units TEXT NOT NULL,
       amount_usdc  REAL NOT NULL,
       timestamp    INTEGER NOT NULL,
-      transaction  TEXT NOT NULL,
+      tx_id  TEXT NOT NULL,
       network      TEXT NOT NULL,
       cached       INTEGER NOT NULL DEFAULT 0
     );
@@ -47,9 +53,9 @@ export function recordPayment(event: Omit<PaymentEvent, 'cached'> & { cached?: b
   const db = getDb()
   const stmt = db.prepare(`
     INSERT OR IGNORE INTO payments
-      (id, payer, page, amount_units, amount_usdc, timestamp, transaction, network, cached)
+      (id, payer, page, amount_units, amount_usdc, timestamp, tx_id, network, cached)
     VALUES
-      (@id, @payer, @page, @amountUnits, @amountUsdc, @timestamp, @transaction, @network, @cached)
+      (@id, @payer, @page, @amountUnits, @amountUsdc, @timestamp, @tx_id, @network, @cached)
   `)
   const result = stmt.run({
     id: event.id ?? uuidv4(),
@@ -58,7 +64,7 @@ export function recordPayment(event: Omit<PaymentEvent, 'cached'> & { cached?: b
     amountUnits: event.amountUnits,
     amountUsdc: event.amountUsdc,
     timestamp: event.timestamp,
-    transaction: event.transaction,
+    tx_id: event.transaction,
     network: event.network,
     cached: event.cached ? 1 : 0,
   })
@@ -108,6 +114,15 @@ export function getRevenueByRoute(): Record<string, number> {
   return Object.fromEntries(rows.map((r) => [r.route, r.total]))
 }
 
+// For testing only — closes and nullifies the singleton so the next getDb()
+// call re-initialises with whatever NANOCRAWL_DB_PATH is set to.
+export function _resetDbForTesting(): void {
+  if (_db) {
+    _db.close()
+    _db = null
+  }
+}
+
 function rowToEvent(row: Record<string, unknown>): PaymentEvent {
   return {
     id: row.id as string,
@@ -116,7 +131,7 @@ function rowToEvent(row: Record<string, unknown>): PaymentEvent {
     amountUnits: row.amount_units as string,
     amountUsdc: row.amount_usdc as number,
     timestamp: row.timestamp as number,
-    transaction: row.transaction as string,
+    transaction: row.tx_id as string,
     network: row.network as string,
     cached: row.cached === 1,
   }
