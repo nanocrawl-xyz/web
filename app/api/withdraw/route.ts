@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
   const client = new GatewayClient({
     chain: 'arcTestnet',
-    privateKey: sellerKey.startsWith('0x') ? sellerKey : `0x${sellerKey}`,
+    privateKey: (sellerKey.startsWith('0x') ? sellerKey : `0x${sellerKey}`) as `0x${string}`,
   })
 
   // Check available gateway balance before attempting
