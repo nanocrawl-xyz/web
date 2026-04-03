@@ -22,7 +22,7 @@ export default function LandingPage() {
           Humans browse for free.
         </p>
         <LiveStats />
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/nanocrawl/dashboard"
             className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
@@ -30,10 +30,16 @@ export default function LandingPage() {
             Live Dashboard
           </Link>
           <Link
-            href="/products"
-            className="border border-gray-700 hover:border-gray-500 text-gray-300 px-5 py-2.5 rounded-lg font-medium transition-colors"
+            href="/docs/merchant"
+            className="bg-gray-800 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
           >
-            Browse Products
+            Get Started as Merchant
+          </Link>
+          <Link
+            href="/docs/buyer"
+            className="bg-gray-800 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+          >
+            Build a Paying Agent
           </Link>
         </div>
       </section>
