@@ -6,7 +6,7 @@
 #
 # PASS = green, FAIL = red. Exit code 1 if any test fails.
 
-set -euo pipefail
+set -uo pipefail
 
 BASE_URL="${SMOKE_BASE_URL:-http://localhost:3000}"
 PASS=0
@@ -15,8 +15,8 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 RESET='\033[0m'
 
-pass() { echo -e "${GREEN}PASS${RESET} $1"; ((PASS++)); }
-fail() { echo -e "${RED}FAIL${RESET} $1"; ((FAIL++)); }
+pass() { echo -e "${GREEN}PASS${RESET} $1"; PASS=$((PASS + 1)); }
+fail() { echo -e "${RED}FAIL${RESET} $1"; FAIL=$((FAIL + 1)); }
 
 echo ""
 echo "NanoCrawl smoke tests → $BASE_URL"
