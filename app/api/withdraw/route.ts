@@ -14,7 +14,8 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const SUPPORTED_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji']
+const SUPPORTED_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji'] as const
+type SupportedChain = typeof SUPPORTED_CHAINS[number]
 
 export async function POST(request: NextRequest) {
   const sellerKey = process.env.NANOCRAWL_SELLER_PRIVATE_KEY
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { amount, destinationChain = 'baseSepolia', recipientAddress } = body
+  const typedChain = destinationChain as SupportedChain
 
   if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
     return NextResponse.json(
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  if (!SUPPORTED_CHAINS.includes(destinationChain)) {
+  if (!SUPPORTED_CHAINS.includes(destinationChain as SupportedChain)) {
     return NextResponse.json({
       error: `Unsupported destinationChain. Supported: ${SUPPORTED_CHAINS.join(', ')}`,
     }, { status: 400 })
@@ -62,9 +64,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await client.withdraw(amount, {
-      chain: destinationChain,
-      ...(recipientAddress ? { recipient: recipientAddress } : {}),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (client as any).withdraw(amount, {
+      chain: typedChain,
+      ...(recipientAddress ? { recipient: recipientAddress as `0x${string}` } : {}),
     })
 
     const mintTxHash = result?.mintTxHash ?? result?.hash ?? String(result)
