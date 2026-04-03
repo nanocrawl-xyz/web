@@ -47,6 +47,7 @@ export function buildPaymentRequired(
     resource: {
       url: request.url,
       mimeType: 'application/json',
+      description: 'NanoCrawl paid content',
     },
     accepts: [buildPaymentRequirements(path, config)],
   }

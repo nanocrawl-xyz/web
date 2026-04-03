@@ -5,7 +5,7 @@
 
 export interface ResourceInfo {
   url: string
-  description?: string
+  description: string             // required by Circle Gateway settle API
   mimeType?: string
 }
 

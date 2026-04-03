@@ -16,7 +16,7 @@ export const ARC_TESTNET = {
 } as const
 
 export const CIRCLE_GATEWAY = {
-  settleEndpoint: 'https://gateway-api-testnet.circle.com/gateway/v1/x402/settle',
+  settleEndpoint: 'https://gateway-api-testnet.circle.com/v1/x402/settle',
   balancesEndpoint: 'https://gateway-api-testnet.circle.com/v1/balances',
 } as const
 

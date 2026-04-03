@@ -22,8 +22,7 @@ import products from '../../../data/products.json'
 import type { PaymentPayload } from '../../../shared/types'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const resource = searchParams.get('resource') ?? '/'
+  const resource = request.nextUrl.searchParams.get('resource') ?? request.nextUrl.pathname
 
   // 1. Decode PAYMENT-SIGNATURE
   const sigHeader = request.headers.get('payment-signature')
@@ -66,13 +65,16 @@ export async function GET(request: NextRequest) {
   try {
     settleResult = await settlePayment(paymentPayload, requirements)
   } catch (err) {
-    console.error('Gateway settle() error:', err)
-    return NextResponse.json({ error: 'Payment gateway error' }, { status: 502 })
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('Gateway settle() error:', msg)
+    return NextResponse.json({ error: msg }, { status: 502 })
   }
 
   if (!settleResult.settled) {
+    const reason = settleResult.response.errorReason ?? 'unknown'
+    console.error('Gateway settle() rejected:', reason, JSON.stringify(settleResult.response))
     return NextResponse.json(
-      { error: 'Payment rejected', reason: settleResult.response.errorReason },
+      { error: `Payment rejected: ${reason}` },
       { status: 402 },
     )
   }

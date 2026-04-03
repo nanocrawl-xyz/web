@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "bash scripts/smoke-test.sh",
-    "crawl": "npx tsx scripts/test-crawler.ts"
+    "crawl": "npx tsx scripts/test-crawler.ts",
+    "crawl:debug": "npx tsx scripts/test-crawler.ts --debug",
+    "smoke:debug": "DEBUG=1 bash scripts/smoke-test.sh"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",

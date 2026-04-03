@@ -23,6 +23,7 @@ import { GatewayClient } from '@circle-fin/x402-batching/client'
 const TARGET_URL   = process.env.CRAWLER_TARGET_URL ?? 'http://localhost:3000'
 const BUYER_KEY    = process.env.NANOCRAWL_BUYER_PRIVATE_KEY
 const PRODUCTS     = ['/products/1', '/products/2', '/products/3']
+const DEBUG        = process.env.DEBUG === '1' || process.argv.includes('--debug')
 
 if (!BUYER_KEY) {
   console.error('ERROR: NANOCRAWL_BUYER_PRIVATE_KEY not set in .env.local')
@@ -32,8 +33,16 @@ if (!BUYER_KEY) {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function log(label: string, value: unknown) {
-  const str = typeof value === 'object' ? JSON.stringify(value, null, 2) : value
+  const replacer = (_: string, v: unknown) => (typeof v === 'bigint' ? v.toString() : v)
+  const str = typeof value === 'object' ? JSON.stringify(value, replacer, 2) : value
   console.log(`  ${label.padEnd(22)} ${str}`)
+}
+
+function debug(label: string, value: unknown) {
+  if (!DEBUG) return
+  const replacer = (_: string, v: unknown) => (typeof v === 'bigint' ? v.toString() : v)
+  const str = typeof value === 'object' ? JSON.stringify(value, replacer, 2) : value
+  console.log(`  [debug] ${label.padEnd(18)} ${str}`)
 }
 
 function separator(title: string) {
@@ -75,13 +84,24 @@ async function main() {
   })
 
   const balances = await client.getBalances()
-  log('Gateway balance', balances)
+  log('On-chain USDC',    balances?.wallet?.formatted ?? '?')
+  log('Gateway available', balances?.gateway?.formattedAvailable ?? '?')
+  debug('Full balances', balances)
 
-  if (!balances?.usdc || parseFloat(balances.usdc) === 0) {
-    console.warn('\nWARN: Gateway balance is 0.')
-    console.warn('Fund this wallet at https://faucet.circle.com then deposit:')
-    console.warn('  const tx = await client.deposit("1")')
-    console.warn('If already funded on-chain, call client.deposit() first.\n')
+  const gatewayAvailable = parseFloat(balances?.gateway?.formattedAvailable ?? '0')
+  const walletBalance    = parseFloat(balances?.wallet?.formatted ?? '0')
+
+  if (gatewayAvailable === 0) {
+    if (walletBalance === 0) {
+      console.error('\nERROR: Wallet has no USDC. Fund at https://faucet.circle.com\n')
+      process.exit(1)
+    }
+    const depositAmount = '1'
+    console.log(`\n  Gateway balance is 0 — depositing ${depositAmount} USDC from wallet...`)
+    const depositTx = await client.deposit(depositAmount)
+    log('Deposit tx', depositTx)
+    const after = await client.getBalances()
+    log('Gateway available (after deposit)', after?.gateway?.formattedAvailable ?? '?')
   }
 
   // ── Step 3: Browse paid pages ──────────────────────────────────────────
@@ -99,33 +119,21 @@ async function main() {
       //   GET url → 402 + PAYMENT-REQUIRED → sign EIP-3009 → retry → 200
       const result = await client.pay(url)
 
-      log('status',           result.status)
-      log('payment response', result.headers?.['payment-response'] ?? 'none')
+      log('status',     result.status)
+      log('tx',         result.transaction || 'none')
+      log('amount',     result.formattedAmount + ' USDC')
+      debug('full result', result)
 
-      if (result.status === 200) {
-        const data = result.data
-        log('content (id)',   data?.id ?? JSON.stringify(data).slice(0, 60))
-
-        const paymentResponse = result.headers?.['payment-response']
-        let tx = 'unknown'
-        let cached = false
-        if (paymentResponse) {
-          try {
-            const decoded = JSON.parse(Buffer.from(paymentResponse, 'base64').toString())
-            tx     = decoded.transaction ?? 'unknown'
-            cached = result.headers?.['x-nanocrawl-cached'] === 'true'
-          } catch {}
-        }
-
-        receipts.push({ url, cost: crawlFee ?? '?', tx, cached })
-        totalSpend += parseFloat(crawlFee ?? '0')
-        console.log(`  ✓ PAID  tx=${tx}  cached=${cached}`)
-      } else {
-        console.log(`  ✗ Unexpected status: ${result.status}`)
-      }
+      const tx     = result.transaction || 'unknown'
+      const cached = false  // GatewayClient doesn't expose X-NanoCrawl-Cached
+      log('content (id)', result.data?.id ?? JSON.stringify(result.data).slice(0, 60))
+      receipts.push({ url, cost: crawlFee ?? '?', tx, cached })
+      totalSpend += parseFloat(crawlFee ?? '0')
+      console.log(`  ✓ PAID  tx=${tx}`)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
       console.log(`  ✗ ERROR: ${msg}`)
+      debug('error obj', err instanceof Error ? { message: err.message, stack: err.stack } : err)
     }
   }
 
