@@ -26,6 +26,7 @@ The full x402 payment flow is confirmed end-to-end against Circle Gateway testne
 | Unit tests (82 passing) | ✅ | classify, x402, config, payments-store |
 | Smoke tests (10/10) | ✅ | Pre-demo checklist |
 | Vercel deployment | ✅ | https://nanocrawl.vercel.app — 10/10 smoke tests pass |
+| Redis persistence (Vercel KV) | ✅ | KV_REDIS_URL — dashboard persists across Lambda invocations |
 | Withdrawal flow | ⏳ | Stub in place, Circle CCTP not implemented |
 
 ---
@@ -116,6 +117,7 @@ Base64-encoded JSON with `x402Version`, `payload.authorization`, `payload.signat
 ## Pending
 
 - [x] Vercel deploy — https://nanocrawl.vercel.app
+- [x] Redis persistence — payments survive cold starts, dashboard shows live revenue
 - [ ] Cloudflare Worker template (`templates/cloudflare-worker.ts`) — merchant artefact
 - [ ] `.well-known/ai-pay` JSON endpoint
 - [ ] Withdrawal via Circle CCTP (`app/api/withdraw/route.ts`)
