@@ -137,6 +137,23 @@ Crawl-fee:               0.001 USDC
 
 ---
 
+## Shared test buyer wallet (Arc Testnet only — never use on mainnet)
+
+To skip faucet + deposit setup, use the same buyer wallet already funded:
+
+- **Address:** `0xcBE1f7217F8faDcEE2eb3E6B51226f0948a93038`
+- **Private key:** share offline (ask Person B directly)
+- **Gateway balance:** ~0.997 USDC available, ready to spend
+- **On-chain balance:** ~18.99 USDC for top-ups via `client.deposit()`
+
+Set in your `.env.local`:
+```
+NANOCRAWL_BUYER_PRIVATE_KEY=<key from Person B>
+NANOCRAWL_BUYER_WALLET=0xcBE1f7217F8faDcEE2eb3E6B51226f0948a93038
+```
+
+---
+
 ## Person A quickstart checklist
 
 - [ ] `npm install @circle-fin/x402-batching @x402/evm`
