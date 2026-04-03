@@ -2,6 +2,7 @@
 // Visible to humans. Crawlers are gated at /products/* only.
 
 import Link from 'next/link'
+import LiveStats from './components/LiveStats'
 
 export default function LandingPage() {
   return (
@@ -20,6 +21,7 @@ export default function LandingPage() {
           Publishers set a price. AI agents pay per page.
           Humans browse for free.
         </p>
+        <LiveStats />
         <div className="flex gap-4">
           <Link
             href="/nanocrawl/dashboard"
