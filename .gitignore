@@ -1,0 +1,32 @@
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Environment variables — never commit private keys
+.env
+.env.local
+.env.*.local
+
+# SQLite database — runtime data, not source
+nanocrawl-payments.db
+nanocrawl-payments.db-shm
+nanocrawl-payments.db-wal
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp

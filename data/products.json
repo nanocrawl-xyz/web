@@ -1,0 +1,67 @@
+[
+  {
+    "id": "1",
+    "name": "Air Phantom X",
+    "brand": "Nike",
+    "price": 189.99,
+    "category": "running",
+    "colorway": "Black / Volt",
+    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 12],
+    "stock": 42,
+    "releaseDate": "2026-02-14",
+    "description": "Next-gen carbon-plate running shoe with ReactX foam midsole. Built for marathon pace, weighs 218g.",
+    "tags": ["carbon", "marathon", "react-foam"]
+  },
+  {
+    "id": "2",
+    "name": "Ultra Boost 24",
+    "brand": "Adidas",
+    "price": 219.99,
+    "category": "running",
+    "colorway": "Core White / Silver",
+    "sizes": [6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11],
+    "stock": 18,
+    "releaseDate": "2026-01-07",
+    "description": "Boost midsole returns 70% energy. Primeknit+ upper adapts to foot shape. Ideal for daily long runs.",
+    "tags": ["boost", "primeknit", "energy-return"]
+  },
+  {
+    "id": "3",
+    "name": "Gel-Kayano 32",
+    "brand": "ASICS",
+    "price": 159.99,
+    "category": "stability",
+    "colorway": "Deep Ocean / Neon Lime",
+    "sizes": [7, 8, 9, 10, 11, 12, 13],
+    "stock": 61,
+    "releaseDate": "2025-11-20",
+    "description": "Stability shoe with 4D Guidance System and FF Blast+ Eco cushioning. For overpronators logging high mileage.",
+    "tags": ["stability", "overpronation", "gel"]
+  },
+  {
+    "id": "4",
+    "name": "Clifton 10",
+    "brand": "Hoka",
+    "price": 144.99,
+    "category": "cushion",
+    "colorway": "Plein Air / Ice Flow",
+    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 12],
+    "stock": 34,
+    "releaseDate": "2025-09-01",
+    "description": "Maximum stack, minimum weight. Early-stage meta-rocker for effortless transitions. 255g.",
+    "tags": ["maximal", "recovery", "meta-rocker"]
+  },
+  {
+    "id": "5",
+    "name": "Fresh Foam X 1080v14",
+    "brand": "New Balance",
+    "price": 174.99,
+    "category": "neutral",
+    "colorway": "Eclipse / Neon Safari",
+    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 12],
+    "stock": 27,
+    "releaseDate": "2026-03-10",
+    "description": "Dual-density Fresh Foam X midsole with Hypoknit upper. The gold standard for everyday neutral training.",
+    "tags": ["fresh-foam", "neutral", "training"]
+  }
+]
