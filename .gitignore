@@ -1,6 +1,7 @@
 # Next.js
 .next/
 out/
+tmp/
 
 # Dependencies
 node_modules/

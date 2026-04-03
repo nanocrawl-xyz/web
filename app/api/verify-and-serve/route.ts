@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   // 2. Idempotency — check payment-identifier extension
   const paymentId = (paymentPayload.extensions?.['payment-identifier'] as { id?: string } | undefined)?.id ?? uuidv4()
-  const existing = findPaymentById(paymentId)
+  const existing = await findPaymentById(paymentId)
   if (existing) {
     // Idempotency cache hit — serve content without re-settling
     const content = resolveContent(resource)
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
 
   // 5. Record payment
   const amountUnits = paymentPayload.accepted.amount
-  recordPayment({
+  await recordPayment({
     id: paymentId,
     payer: settleResult.response.payer ?? paymentPayload.payload.authorization.from,
     page: resource,

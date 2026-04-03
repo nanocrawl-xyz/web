@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '100', 10), 500)
 
-  const payments = getRecentPayments(limit)
-  const totalRevenue = getTotalRevenue()
-  const revenueByRoute = getRevenueByRoute()
+  const payments = await getRecentPayments(limit)
+  const totalRevenue = await getTotalRevenue()
+  const revenueByRoute = await getRevenueByRoute()
 
   return NextResponse.json({
     payments,

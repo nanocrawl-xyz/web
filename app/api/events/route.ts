@@ -25,9 +25,9 @@ export async function GET() {
     async start(controller) {
       const push = async () => {
         try {
-          const payments = getRecentPayments(50)
-          const totalRevenue = getTotalRevenue()
-          const revenueByRoute = getRevenueByRoute()
+          const payments = await getRecentPayments(50)
+          const totalRevenue = await getTotalRevenue()
+          const revenueByRoute = await getRevenueByRoute()
 
           let balanceUsdc = 0
           try {
