@@ -15,9 +15,10 @@
  *   CRAWLER_TARGET_URL=https://your-app.vercel.app npx tsx scripts/test-crawler.ts
  */
 
-import 'dotenv/config'
+import { config } from 'dotenv'
+config({ path: '.env.local' })
 // @ts-ignore — SDK types may not fully align with our tsconfig
-import { GatewayClient } from '@circle-fin/x402-batching'
+import { GatewayClient } from '@circle-fin/x402-batching/client'
 
 const TARGET_URL   = process.env.CRAWLER_TARGET_URL ?? 'http://localhost:3000'
 const BUYER_KEY    = process.env.NANOCRAWL_BUYER_PRIVATE_KEY
