@@ -8,6 +8,14 @@ import { useEffect, useRef, useState } from 'react'
 import type { PaymentEvent } from '../../../shared/types'
 import { ARC_TESTNET } from '../../../shared/config'
 
+const CHAIN_EXPLORER: Record<string, string> = {
+  arcTestnet:       'https://testnet.arcscan.app/tx/',
+  baseSepolia:      'https://sepolia.basescan.org/tx/',
+  arbitrumSepolia:  'https://sepolia.arbiscan.io/tx/',
+  optimismSepolia:  'https://sepolia-optimism.etherscan.io/tx/',
+  avalancheFuji:    'https://testnet.snowtrace.io/tx/',
+}
+
 interface DashboardData {
   payments: PaymentEvent[]
   totalRevenue: number
@@ -161,14 +169,34 @@ export default function DashboardPage() {
                 : 'Withdraw'}
           </button>
         </div>
-        {withdrawResult && (
-          <div className="text-sm text-green-400 space-y-1">
-            <p>Withdrawn ${withdrawResult.amount} USDC → {withdrawResult.destinationChain}</p>
-            <p className="font-mono text-xs text-gray-400 break-all">Mint tx: {withdrawResult.mintTxHash}</p>
-          </div>
-        )}
+        {withdrawResult && (() => {
+          const explorerBase = CHAIN_EXPLORER[withdrawResult.destinationChain]
+          const txUrl = explorerBase && withdrawResult.mintTxHash && !withdrawResult.mintTxHash.startsWith('[')
+            ? `${explorerBase}${withdrawResult.mintTxHash}`
+            : null
+          return (
+            <div className="text-sm text-green-400 space-y-1">
+              <p>Withdrawn ${withdrawResult.amount} USDC → {withdrawResult.destinationChain}</p>
+              <p className="font-mono text-xs text-gray-400 break-all">
+                tx:{' '}
+                {txUrl
+                  ? <a href={txUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-200">{withdrawResult.mintTxHash}</a>
+                  : withdrawResult.mintTxHash
+                }
+              </p>
+            </div>
+          )
+        })()}
         {withdrawError && (
-          <p className="text-sm text-red-400">{withdrawError}</p>
+          <div className="text-sm text-red-400 space-y-1">
+            <p>{withdrawError}</p>
+            {withdrawError.includes('gas required exceeds allowance') && (
+              <p className="text-xs text-gray-500">
+                CCTP cross-chain withdrawals require Arc native gas in the seller wallet.
+                Fund it at <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline">faucet.circle.com</a> or the Arc testnet faucet, then retry.
+              </p>
+            )}
+          </div>
         )}
       </div>
 
