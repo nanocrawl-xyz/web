@@ -134,7 +134,7 @@ export default function ArchDiagram() {
         {/* ── CIRCLE GATEWAY box ────────────────────────────────── */}
         <rect x="195" y="280" width="510" height="110" rx="10"
           fill="#120c1f" stroke="#7c3aed" strokeWidth="1.5" />
-        <text x="450" y="300" textAnchor="middle" fill="#c4b5fd" fontWeight="bold" fontSize="11" letterSpacing="1">CIRCLE GATEWAY — ARC TESTNET</text>
+        <text x="450" y="300" textAnchor="middle" fill="#c4b5fd" fontWeight="bold" fontSize="11" letterSpacing="1">CIRCLE GATEWAY — ARC · BASE SEPOLIA · …</text>
         <line x1="195" y1="307" x2="705" y2="307" stroke="#7c3aed" strokeWidth="0.5" />
 
         <text x="310" y="326" textAnchor="middle" fill="#e5e7eb" fontSize="11">Batch settlement</text>

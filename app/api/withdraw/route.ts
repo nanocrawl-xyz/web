@@ -1,14 +1,16 @@
 // Node.js runtime — merchant withdrawal via Circle Gateway CCTP.
 //
 // POST /api/withdraw
-// Body: { amount: string, destinationChain?: string, recipientAddress?: string }
+// Body: { amount: string, sourceChain?: string, destinationChain?: string, recipientAddress?: string }
+//
+// sourceChain: chain where the seller's Gateway balance sits (default: arcTestnet)
+//              Use 'baseSepolia' when sweeping balance earned from Unlink payments.
+// destinationChain: chain to receive USDC on-chain (default: arcTestnet = same-chain, instant)
 //
 // Uses GatewayClient.withdraw() which handles the full CCTP flow:
 //   1. Signs a BurnIntent with the merchant's key
 //   2. POSTs to Circle Gateway /transfer
-//   3. Circle burns on Arc, mints on destination chain
-//
-// Default destination: baseSepolia (easiest testnet to verify)
+//   3. Circle burns on source chain, mints on destination chain
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // CCTP attestation can take up to ~30s on slower chains
@@ -25,15 +27,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'NANOCRAWL_SELLER_PRIVATE_KEY not configured' }, { status: 500 })
   }
 
-  let body: { amount?: string; destinationChain?: string; recipientAddress?: string }
+  let body: { amount?: string; sourceChain?: string; destinationChain?: string; recipientAddress?: string }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { amount, destinationChain = 'arcTestnet', recipientAddress } = body
+  const { amount, sourceChain = 'arcTestnet', destinationChain = 'arcTestnet', recipientAddress } = body
   const typedChain = destinationChain as SupportedChain
+
+  if (!SUPPORTED_CHAINS.includes(sourceChain as SupportedChain)) {
+    return NextResponse.json({
+      error: `Unsupported sourceChain. Supported: ${SUPPORTED_CHAINS.join(', ')}`,
+    }, { status: 400 })
+  }
 
   if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
     return NextResponse.json(
@@ -52,7 +60,7 @@ export async function POST(request: NextRequest) {
   const { GatewayClient } = await import('@circle-fin/x402-batching/client')
 
   const client = new GatewayClient({
-    chain: 'arcTestnet',
+    chain: sourceChain as SupportedChain,
     privateKey: (sellerKey.startsWith('0x') ? sellerKey : `0x${sellerKey}`) as `0x${string}`,
   })
 

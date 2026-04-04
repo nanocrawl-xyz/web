@@ -140,6 +140,53 @@ console.log(result.transaction)  // Circle settlement UUID`}</pre>
         </p>
       </section>
 
+      {/* Privacy: Unlink + Base Sepolia */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Private Payments via Unlink</h2>
+        <p className="text-gray-400 text-sm">
+          By default, your agent's wallet address is visible on-chain as a Gateway participant.
+          For agents where data-source privacy matters — trading bots, research agents — you can
+          shield your identity using <strong className="text-white">Unlink</strong>, a ZK privacy pool on Base Sepolia.
+        </p>
+        <div className="bg-gray-900 rounded-xl p-5 space-y-3 border border-gray-800">
+          <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">How it works</p>
+          <ol className="space-y-2 text-sm text-gray-400 list-decimal list-inside">
+            <li>Real agent EOA deposits USDC into the Unlink pool (<code className="bg-gray-800 px-1 rounded">unlink.deposit()</code>)</li>
+            <li>Unlink creates an ephemeral burner EOA — no on-chain link to the real address</li>
+            <li>Burner EOA deposits into Circle Gateway on Base Sepolia (<code className="bg-gray-800 px-1 rounded">gateway.deposit()</code>)</li>
+            <li>Crawl loop runs normally — <code className="bg-gray-800 px-1 rounded">client.pay(url)</code> from the burner</li>
+            <li>Session ends: burner withdraws remaining USDC, returns to Unlink pool, key destroyed</li>
+          </ol>
+          <p className="text-xs text-gray-500 mt-2">
+            On-chain, observers see only "a burner funded from the Unlink pool paid X USDC" —
+            the real agent's identity and spending pattern are shielded.
+          </p>
+        </div>
+        <pre className="bg-gray-900 rounded-lg p-4 font-mono text-sm text-gray-300 overflow-x-auto">{`// Use Base Sepolia for the Unlink flow (Unlink is deployed here, not Arc)
+const burner = await BurnerWallet.create()
+await burner.fundFromPool(unlinkClient, { token: USDC, amount: '5000000' })
+
+const gateway = new GatewayClient({
+  chain: 'baseSepolia',            // ← Base Sepolia, not arcTestnet
+  privateKey: burner.privateKey,
+})
+await gateway.deposit('5.00')
+
+// Crawl loop — identical to the standard flow
+for (const url of urls) {
+  await gateway.pay(url)
+}
+
+// Session end — return funds, dispose burner
+await gateway.withdraw(remaining)
+await burner.depositToPool(unlinkClient, { ... })
+burner.deleteKey()`}</pre>
+        <p className="text-gray-500 text-xs">
+          NanoCrawl accepts payments on both Arc Testnet and Base Sepolia.
+          No seller-side changes needed — the 402 response advertises both networks.
+        </p>
+      </section>
+
       {/* Interface contract link */}
       <section className="bg-gray-900 rounded-xl p-6 space-y-2">
         <p className="font-semibold">Full Interface Contract</p>
