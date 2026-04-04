@@ -26,6 +26,16 @@ The **agent side** (MCP server that gives AI agents a wallet and pays automatica
 
 ---
 
+## Origin
+
+The project began with a detailed design document written before a single line of code:
+
+**[`NanoCrawl_Design_Document.md`](./NanoCrawl_Design_Document.md)**
+
+It covers the full problem statement (why the web is broken for AI and why robots.txt + paywalls fail), the economic case for nanopayments at crawl scale, the architectural decisions (x402 + Circle Gateway + bot detection), the proactive robots.txt extension, security and replay protection, and the scope plan for the hackathon. It is the authoritative design reference — if something in the code feels non-obvious, the rationale is almost certainly in that document.
+
+---
+
 ## How it evolved
 
 The project started here. Early commits established the x402 protocol integration, Circle Gateway settlement, and bot detection. From there it grew into:
