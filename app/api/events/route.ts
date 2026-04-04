@@ -45,7 +45,7 @@ export async function GET() {
             payments,
             totalRevenue,
             totalWithdrawn,
-            lifetimeEarned: totalRevenue + totalWithdrawn,
+            lifetimeEarned: balanceUsdc + totalWithdrawn,
             revenueByRoute,
             balanceUsdc,
             ts: Date.now(),

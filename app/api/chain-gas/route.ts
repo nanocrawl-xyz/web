@@ -13,7 +13,6 @@ const CHAINS = [
   { name: 'optimismSepolia',  rpc: 'https://sepolia.optimism.io' },
   { name: 'avalancheFuji',    rpc: 'https://api.avax-test.network/ext/bc/C/rpc' },
   { name: 'unichainSepolia',  rpc: 'https://sepolia.unichain.org' },
-  { name: 'sepolia',          rpc: 'https://11155111.rpc.thirdweb.com' },
 ]
 
 async function getEthBalance(rpc: string, address: string): Promise<bigint> {

@@ -16,7 +16,7 @@ export const maxDuration = 60 // CCTP attestation can take up to ~30s on slower 
 import { NextRequest, NextResponse } from 'next/server'
 import { recordWithdrawal } from '../../../lib/payments-store'
 
-const SUPPORTED_CHAINS = ['arcTestnet', 'baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji', 'unichainSepolia', 'sepolia'] as const
+const SUPPORTED_CHAINS = ['arcTestnet', 'baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji', 'unichainSepolia'] as const
 type SupportedChain = typeof SUPPORTED_CHAINS[number]
 
 export async function POST(request: NextRequest) {
