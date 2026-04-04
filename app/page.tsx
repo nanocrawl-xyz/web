@@ -68,18 +68,52 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Why Arc callout */}
-      <section className="bg-yellow-950/30 border border-yellow-800/40 rounded-xl p-6 space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">★</span>
-          <h2 className="text-lg font-semibold text-yellow-200">Why Arc is Different</h2>
+      {/* Positioning */}
+      <section className="space-y-6">
+        <blockquote className="border-l-4 border-gray-600 pl-6 text-gray-300 text-lg italic leading-relaxed">
+          Cloudflare controls access.<br />
+          NanoCrawl defines how machines pay for it.
+        </blockquote>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gray-900 rounded-xl p-5 space-y-2 border border-gray-800">
+            <p className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Cryptographic, not accounting</p>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Every payment is a signed EIP-3009 authorization — verifiable on-chain,
+              non-repudiable, settled in batches. Cloudflare-style billing aggregates usage
+              centrally. Circle Nanopayments signs per request.
+            </p>
+          </div>
+          <div className="bg-gray-900 rounded-xl p-5 space-y-2 border border-gray-800">
+            <p className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Agent-native by design</p>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              No accounts. No billing cycles. No API keys. An AI agent reads{' '}
+              <code className="text-gray-300 bg-gray-800 px-1 rounded">robots.txt</code>,
+              discovers the price, signs off-chain, and pays — all autonomously via MCP.
+              Sub-cent granularity makes per-page economics viable.
+            </p>
+          </div>
+          <div className="bg-gray-900 rounded-xl p-5 space-y-2 border border-gray-800">
+            <p className="text-blue-400 font-semibold text-sm uppercase tracking-wide">Cross-chain out of the box</p>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Payments settle on Arc — where USDC is the native gas token, so merchants
+              pay nothing to receive. Circle CCTP lets them sweep to Base, Unichain,
+              or any supported chain in one call. No bridging UX, no manual steps.
+            </p>
+          </div>
         </div>
-        <p className="text-gray-400 text-sm leading-relaxed">
-          On every other chain, CCTP cross-chain withdrawals require a separate native gas token
-          (ETH on Base, etc.). Arc is unique: <strong className="text-yellow-300">USDC is the native currency</strong>.
-          Merchants accumulate payments in the Circle Gateway and withdraw instantly to their Arc wallet —
-          no ETH, no friction. Cross-chain to Base or Unichain is also available via CCTP when needed.
-        </p>
+
+        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 flex gap-4 items-start">
+          <span className="text-gray-500 text-xl shrink-0">⚡</span>
+          <div>
+            <p className="font-medium text-sm text-gray-200">Complements Cloudflare — doesn't compete</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Cloudflare excels at detection and enforcement. NanoCrawl is the payment layer that
+              plugs in behind it. Our Cloudflare Worker template deploys NanoCrawl as a Worker in
+              front of any origin — Cloudflare guards the gate, NanoCrawl handles the economics.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* How it works */}
