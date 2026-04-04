@@ -27,8 +27,11 @@ The full x402 payment flow is confirmed end-to-end against Circle Gateway testne
 | Smoke tests (10/10) | ✅ | Pre-demo checklist |
 | Vercel deployment | ✅ | https://nanocrawl.vercel.app — 10/10 smoke tests pass |
 | Redis persistence (Vercel KV) | ✅ | KV_REDIS_URL — dashboard persists across Lambda invocations |
-| Withdrawal flow | ✅ | GatewayClient.withdraw() via Circle CCTP to baseSepolia |
+| Withdrawal flow | ✅ | Arc (instant, USDC=gas), Base Sepolia + Unichain Sepolia (CCTP verified) |
 | Cloudflare Worker template | ✅ | `templates/cloudflare-worker.ts` — standalone, no deps |
+| Dashboard accounting | ✅ | Lifetime Earned = Gateway Balance + Total Withdrawn (Circle ground truth) |
+| Chain gas detection | ✅ | Dropdown only shows chains where merchant has native gas |
+| /docs/merchant + /docs/buyer | ✅ | Quickstart pages with hero CTA buttons on landing |
 
 ---
 
