@@ -122,6 +122,9 @@ Base64-encoded JSON with `x402Version`, `payload.authorization`, `payload.signat
 - [x] Cloudflare Worker template (`templates/cloudflare-worker.ts`) — merchant artefact
 - [x] Withdrawal via Circle CCTP (`app/api/withdraw/route.ts`)
 - [x] Robustness tests (`lib/__tests__/verify-and-serve.test.ts`) — 93 tests total
+- [x] Dashboard: Lifetime Earned, withdrawal tracking, chain dropdown with gas filter
+- [x] /docs/merchant and /docs/buyer sub-pages with hero CTA buttons
+- [ ] Connect GitHub repo to Vercel for auto-deploy on push (currently deploying manually with `vercel --prod`)
 - [ ] `.well-known/ai-pay` JSON endpoint
-- [ ] Landing page polish — buyer tooling + merchant tooling sections
-- [ ] Architecture diagram (`public/architecture.png`)
+- [ ] Landing page polish — architecture diagram, cross-chain buyer note
+- [ ] Architecture diagram (`public/architecture.png`) — important for Circle DevRel audience; show EIP-3009 off-chain signing, batch settlement on Arc, dual withdrawal paths (Arc native vs CCTP)
