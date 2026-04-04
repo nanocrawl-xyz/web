@@ -12,7 +12,7 @@ import {
   decodePaymentSignature,
 } from '../x402'
 import nanocrawlConfig from '../../nanocrawl.config'
-import { X402_VERSION, ARC_TESTNET, MAX_TIMEOUT_SECONDS } from '../../shared/config'
+import { X402_VERSION, ARC_TESTNET, BASE_SEPOLIA, SUPPORTED_NETWORKS, getNetworkByCaip2, MAX_TIMEOUT_SECONDS } from '../../shared/config'
 import type { PaymentRequired, SettlementResponse } from '../../shared/types'
 
 function makeRequest(path = '/products/1'): NextRequest {
@@ -21,45 +21,106 @@ function makeRequest(path = '/products/1'): NextRequest {
   })
 }
 
+// ── getNetworkByCaip2 (shared/config) ────────────────────────────────────
+
+describe('getNetworkByCaip2', () => {
+  it('finds Arc Testnet by CAIP-2', () => {
+    const net = getNetworkByCaip2('eip155:5042002')
+    expect(net).toBeDefined()
+    expect(net?.name).toBe('arcTestnet')
+  })
+
+  it('finds Base Sepolia by CAIP-2', () => {
+    const net = getNetworkByCaip2('eip155:84532')
+    expect(net).toBeDefined()
+    expect(net?.name).toBe('baseSepolia')
+  })
+
+  it('returns undefined for unknown CAIP-2', () => {
+    expect(getNetworkByCaip2('eip155:1')).toBeUndefined()
+  })
+
+  it('SUPPORTED_NETWORKS has exactly 2 entries', () => {
+    expect(SUPPORTED_NETWORKS.length).toBe(2)
+  })
+
+  it('Arc Testnet and Base Sepolia have different USDC addresses', () => {
+    expect(ARC_TESTNET.usdc).not.toBe(BASE_SEPOLIA.usdc)
+  })
+
+  it('Arc Testnet and Base Sepolia share the same Gateway Wallet address', () => {
+    expect(ARC_TESTNET.gatewayWallet).toBe(BASE_SEPOLIA.gatewayWallet)
+  })
+})
+
 // ── buildPaymentRequirements ──────────────────────────────────────────────
 
 describe('buildPaymentRequirements', () => {
-  const req = buildPaymentRequirements('/products/1', nanocrawlConfig)
+  describe('Arc Testnet (default)', () => {
+    const req = buildPaymentRequirements('/products/1', nanocrawlConfig)
 
-  it('uses exact scheme', () => {
-    expect(req.scheme).toBe('exact')
+    it('uses exact scheme', () => {
+      expect(req.scheme).toBe('exact')
+    })
+
+    it('uses Arc Testnet CAIP-2 network', () => {
+      expect(req.network).toBe('eip155:5042002')
+    })
+
+    it('uses correct Arc USDC asset address', () => {
+      expect(req.asset).toBe(ARC_TESTNET.usdc)
+    })
+
+    it('amount is a string (not a number)', () => {
+      expect(typeof req.amount).toBe('string')
+    })
+
+    it('amount is 1000 base units for $0.001 USDC', () => {
+      expect(req.amount).toBe('1000')
+    })
+
+    it('maxTimeoutSeconds matches config', () => {
+      expect(req.maxTimeoutSeconds).toBe(MAX_TIMEOUT_SECONDS)
+    })
+
+    it('extra.name is GatewayWalletBatched', () => {
+      expect(req.extra?.name).toBe('GatewayWalletBatched')
+    })
+
+    it('extra.version is "1"', () => {
+      expect(req.extra?.version).toBe('1')
+    })
+
+    it('extra.verifyingContract is the Gateway Wallet address', () => {
+      expect(req.extra?.verifyingContract).toBe(ARC_TESTNET.gatewayWallet)
+    })
   })
 
-  it('uses Arc Testnet CAIP-2 network', () => {
-    expect(req.network).toBe('eip155:5042002')
-  })
+  describe('Base Sepolia (Unlink privacy network)', () => {
+    const req = buildPaymentRequirements('/products/1', nanocrawlConfig, BASE_SEPOLIA)
 
-  it('uses correct USDC asset address', () => {
-    expect(req.asset).toBe(ARC_TESTNET.usdc)
-  })
+    it('uses Base Sepolia CAIP-2 network', () => {
+      expect(req.network).toBe('eip155:84532')
+    })
 
-  it('amount is a string (not a number)', () => {
-    expect(typeof req.amount).toBe('string')
-  })
+    it('uses Base Sepolia USDC address (not Arc)', () => {
+      expect(req.asset).toBe(BASE_SEPOLIA.usdc)
+      expect(req.asset).not.toBe(ARC_TESTNET.usdc)
+    })
 
-  it('amount is 1000 base units for $0.001 USDC', () => {
-    expect(req.amount).toBe('1000')
-  })
+    it('same amount as Arc (price is network-agnostic)', () => {
+      expect(req.amount).toBe('1000')
+    })
 
-  it('maxTimeoutSeconds matches config', () => {
-    expect(req.maxTimeoutSeconds).toBe(MAX_TIMEOUT_SECONDS)
-  })
+    it('same payTo address as Arc', () => {
+      const arcReq = buildPaymentRequirements('/products/1', nanocrawlConfig, ARC_TESTNET)
+      expect(req.payTo).toBe(arcReq.payTo)
+    })
 
-  it('extra.name is GatewayWalletBatched', () => {
-    expect(req.extra?.name).toBe('GatewayWalletBatched')
-  })
-
-  it('extra.version is "1"', () => {
-    expect(req.extra?.version).toBe('1')
-  })
-
-  it('extra.verifyingContract is the Gateway Wallet address', () => {
-    expect(req.extra?.verifyingContract).toBe(ARC_TESTNET.gatewayWallet)
+    it('verifyingContract is the same Gateway Wallet (shared across chains)', () => {
+      expect(req.extra?.verifyingContract).toBe(BASE_SEPOLIA.gatewayWallet)
+      expect(req.extra?.verifyingContract).toBe(ARC_TESTNET.gatewayWallet)
+    })
   })
 })
 
@@ -108,24 +169,50 @@ describe('build402Response', () => {
     expect(body.x402Version).toBe(X402_VERSION)
   })
 
-  it('decoded PaymentRequired has non-empty accepts array', async () => {
+  it('accepts[] has one entry per supported network', async () => {
     const res = build402Response(makeRequest(), nanocrawlConfig)
     const body: PaymentRequired = await res.clone().json()
-    expect(body.accepts.length).toBeGreaterThan(0)
+    expect(body.accepts.length).toBe(SUPPORTED_NETWORKS.length)
   })
 
-  it('accepts[0] has all required x402 fields', async () => {
+  it('accepts[0] is Arc Testnet with all required x402 fields', async () => {
     const res = build402Response(makeRequest(), nanocrawlConfig)
     const body: PaymentRequired = await res.clone().json()
-    const entry = body.accepts[0]
-    expect(entry).toMatchObject({
+    expect(body.accepts[0]).toMatchObject({
       scheme: 'exact',
       network: 'eip155:5042002',
-      asset: expect.stringMatching(/^0x/),
+      asset: ARC_TESTNET.usdc,
       amount: expect.any(String),
       payTo: expect.any(String),
       maxTimeoutSeconds: expect.any(Number),
     })
+  })
+
+  it('accepts[1] is Base Sepolia with correct USDC address', async () => {
+    const res = build402Response(makeRequest(), nanocrawlConfig)
+    const body: PaymentRequired = await res.clone().json()
+    expect(body.accepts[1]).toMatchObject({
+      scheme: 'exact',
+      network: 'eip155:84532',
+      asset: BASE_SEPOLIA.usdc,
+      amount: expect.any(String),
+      payTo: expect.any(String),
+      maxTimeoutSeconds: expect.any(Number),
+    })
+  })
+
+  it('all accepts[] entries have the same amount (price is network-agnostic)', async () => {
+    const res = build402Response(makeRequest(), nanocrawlConfig)
+    const body: PaymentRequired = await res.clone().json()
+    const amounts = body.accepts.map(a => a.amount)
+    expect(new Set(amounts).size).toBe(1)
+  })
+
+  it('all accepts[] entries have the same payTo address', async () => {
+    const res = build402Response(makeRequest(), nanocrawlConfig)
+    const body: PaymentRequired = await res.clone().json()
+    const payTos = body.accepts.map(a => a.payTo)
+    expect(new Set(payTos).size).toBe(1)
   })
 
   it('resource.url reflects the original request URL', async () => {
