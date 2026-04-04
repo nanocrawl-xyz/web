@@ -183,7 +183,8 @@ crawlers find it by convention. .well-known/ai-pay = typed JSON bootstrap for ag
   - `fetchGatewayBalance()` queries both chains, returns combined total
   - robots.txt and `.well-known/ai-pay` advertise both networks
   - BatchFacilitatorClient.settle() is network-agnostic — no code change needed
-  - **Still needed:** fund seller Gateway balance on Base Sepolia (manual step via faucet + deposit)
+  - **Seller needs nothing extra:** settle() is a pure API call — no gas, no pre-deposit. Seller balance accumulates as payments come in.
+  - **Person A needs:** Base Sepolia USDC (Circle faucet) + small ETH for gas → `gateway.deposit()` on Base Sepolia before paying
 - [ ] **Person A integration** — MCP server + live AI agent demo (critical for judging)
 - [ ] **Unlink privacy demo** — depends on Phase 1.5 + Person A
 - [ ] Connect GitHub repo to Vercel for auto-deploy (blocked on private org repo)
