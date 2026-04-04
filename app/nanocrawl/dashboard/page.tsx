@@ -192,8 +192,10 @@ export default function DashboardPage() {
             <p>{withdrawError}</p>
             {withdrawError.includes('gas required exceeds allowance') && (
               <p className="text-xs text-gray-500">
-                CCTP cross-chain withdrawals require Arc native gas in the seller wallet.
-                Fund it at <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline">faucet.circle.com</a> or the Arc testnet faucet, then retry.
+                Arc is unique: USDC <em>is</em> the native gas token, so Arc withdrawals are seamless.
+                CCTP cross-chain mints on the destination chain and needs that chain's native gas (e.g. Sepolia ETH on Base Sepolia) — the seller wallet has none there yet.
+                Get testnet ETH from the{' '}
+                <a href="https://faucets.chain.link" target="_blank" rel="noopener noreferrer" className="underline">Chainlink faucet</a>, then retry.
               </p>
             )}
           </div>
