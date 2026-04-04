@@ -71,9 +71,7 @@ export default function DashboardPage() {
 
   // Check gas balances on CCTP chains async after load (non-blocking)
   useEffect(() => {
-    const sellerWallet = process.env.NEXT_PUBLIC_SELLER_WALLET
-    if (!sellerWallet) { setGasChecking(false); return }
-    fetch(`/api/chain-gas?address=${sellerWallet}`)
+    fetch('/api/chain-gas')
       .then(r => r.json())
       .then(({ balances }: { balances: Record<string, { funded: boolean }> }) => {
         const funded = new Set<string>(['arcTestnet'])

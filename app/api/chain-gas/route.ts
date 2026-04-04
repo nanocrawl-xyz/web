@@ -27,9 +27,9 @@ async function getEthBalance(rpc: string, address: string): Promise<bigint> {
   return BigInt(data.result ?? '0x0')
 }
 
-export async function GET(request: NextRequest) {
-  const address = request.nextUrl.searchParams.get('address')
-  if (!address) return NextResponse.json({ error: 'address required' }, { status: 400 })
+export async function GET(_request: NextRequest) {
+  const address = process.env.NANOCRAWL_SELLER_WALLET
+  if (!address) return NextResponse.json({ error: 'NANOCRAWL_SELLER_WALLET not configured' }, { status: 500 })
 
   const results = await Promise.allSettled(
     CHAINS.map(async ({ name, rpc }) => {
