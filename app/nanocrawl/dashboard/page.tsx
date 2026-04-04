@@ -16,6 +16,17 @@ const CHAIN_EXPLORER: Record<string, string> = {
   avalancheFuji:    'https://testnet.snowtrace.io/tx/',
 }
 
+const CHAIN_LABELS: Record<string, string> = {
+  arcTestnet:       'Arc Testnet (same chain)',
+  baseSepolia:      'Base Sepolia (CCTP)',
+  arbitrumSepolia:  'Arbitrum Sepolia (CCTP)',
+  optimismSepolia:  'Optimism Sepolia (CCTP)',
+  avalancheFuji:    'Avalanche Fuji (CCTP)',
+}
+
+// Arc always works (USDC = gas); others require ETH on destination
+const CCTP_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji']
+
 interface DashboardData {
   payments: PaymentEvent[]
   totalRevenue: number
@@ -33,6 +44,8 @@ export default function DashboardPage() {
   const [withdrawAmount, setWithdrawAmount] = useState('')
   const [withdrawResult, setWithdrawResult] = useState<{ mintTxHash: string; amount: string; destinationChain: string } | null>(null)
   const [withdrawError, setWithdrawError] = useState<string | null>(null)
+  const [gasChecking, setGasChecking] = useState(true)
+  const [fundedChains, setFundedChains] = useState<Set<string>>(new Set(['arcTestnet']))
 
   // Subscribe to SSE stream; seed withdrawAmount from first load only
   const withdrawAmountSeeded = useRef(false)
@@ -50,6 +63,26 @@ export default function DashboardPage() {
     }
     es.onerror = () => {}
     return () => es.close()
+  }, [])
+
+  // Check gas balances on CCTP chains async after load (non-blocking)
+  useEffect(() => {
+    const sellerWallet = process.env.NEXT_PUBLIC_SELLER_WALLET
+    if (!sellerWallet) { setGasChecking(false); return }
+    fetch(`/api/chain-gas?address=${sellerWallet}`)
+      .then(r => r.json())
+      .then(({ balances }: { balances: Record<string, { funded: boolean }> }) => {
+        const funded = new Set<string>(['arcTestnet'])
+        for (const chain of CCTP_CHAINS) {
+          if (balances[chain]?.funded) funded.add(chain)
+        }
+        setFundedChains(funded)
+      })
+      .catch(() => {
+        // On error show all chains — fail open, don't hide options
+        setFundedChains(new Set(['arcTestnet', ...CCTP_CHAINS]))
+      })
+      .finally(() => setGasChecking(false))
   }, [])
 
   async function handleWithdraw() {
@@ -143,18 +176,20 @@ export default function DashboardPage() {
               Max
             </button>
           </div>
-          {/* Chain selector */}
+          {/* Chain selector — only shows chains where merchant has gas */}
           <select
-            value={withdrawChain}
+            value={fundedChains.has(withdrawChain) ? withdrawChain : 'arcTestnet'}
             onChange={(e) => setWithdrawChain(e.target.value)}
-            disabled={withdrawing}
-            className="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+            disabled={withdrawing || gasChecking}
+            className="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 disabled:opacity-60"
           >
-            <option value="arcTestnet">Arc Testnet (same chain)</option>
-            <option value="baseSepolia">Base Sepolia (CCTP)</option>
-            <option value="arbitrumSepolia">Arbitrum Sepolia (CCTP)</option>
-            <option value="optimismSepolia">Optimism Sepolia (CCTP)</option>
-            <option value="avalancheFuji">Avalanche Fuji (CCTP)</option>
+            {gasChecking && <option value="">Checking chains…</option>}
+            {!gasChecking && Object.entries(CHAIN_LABELS)
+              .filter(([chain]) => fundedChains.has(chain))
+              .map(([chain, label]) => (
+                <option key={chain} value={chain}>{label}</option>
+              ))
+            }
           </select>
           {/* Submit */}
           <button
