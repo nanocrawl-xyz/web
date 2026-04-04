@@ -129,5 +129,7 @@ Base64-encoded JSON with `x402Version`, `payload.authorization`, `payload.signat
 - [x] /docs/merchant and /docs/buyer sub-pages with hero CTA buttons
 - [ ] Connect GitHub repo to Vercel for auto-deploy on push (currently deploying manually with `vercel --prod`)
 - [ ] `.well-known/ai-pay` JSON endpoint
-- [ ] Landing page polish — architecture diagram, cross-chain buyer note
-- [ ] Architecture diagram (`public/architecture.png`) — important for Circle DevRel audience; show EIP-3009 off-chain signing, batch settlement on Arc, dual withdrawal paths (Arc native vs CCTP)
+- [ ] Landing page copy rework — current positioning section is too CF-centric without context; needs full rewrite once demo audience is clearer. Keep structure, rework prose.
+- [ ] Architecture diagram fine-tuning — SVG is live, review with fresh eyes
+- [ ] Person A integration — MCP server + live AI agent demo (critical for judging)
+- [ ] Add cross-chain buyer note to /docs/buyer (future roadmap item)
