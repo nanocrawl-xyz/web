@@ -11,6 +11,7 @@
 // Default destination: baseSepolia (easiest testnet to verify)
 
 export const runtime = 'nodejs'
+export const maxDuration = 60 // CCTP attestation can take up to ~30s on slower chains
 
 import { NextRequest, NextResponse } from 'next/server'
 import { recordWithdrawal } from '../../../lib/payments-store'

@@ -200,7 +200,7 @@ export default function DashboardPage() {
             className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg font-medium transition-colors"
           >
             {withdrawing
-              ? 'Withdrawing…'
+              ? (withdrawChain === 'arcTestnet' ? 'Withdrawing…' : 'Bridging via CCTP… (up to 60s)')
               : parseFloat(withdrawAmount) >= (data?.balanceUsdc ?? 0) - 0.000001
                 ? 'Sweep All'
                 : 'Withdraw'}
