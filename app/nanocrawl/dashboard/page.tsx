@@ -19,6 +19,7 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [withdrawing, setWithdrawing] = useState(false)
+  const [withdrawChain, setWithdrawChain] = useState('baseSepolia')
   const [withdrawResult, setWithdrawResult] = useState<{ mintTxHash: string; amount: string; destinationChain: string } | null>(null)
   const [withdrawError, setWithdrawError] = useState<string | null>(null)
 
@@ -45,7 +46,7 @@ export default function DashboardPage() {
       const res = await fetch('/api/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, destinationChain: 'baseSepolia' }),
+        body: JSON.stringify({ amount, destinationChain: withdrawChain }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -99,13 +100,26 @@ export default function DashboardPage() {
           Transfer accumulated USDC from Circle Gateway to your on-chain wallet.
           This is an on-chain transaction — visible on Blockscout.
         </p>
-        <button
-          onClick={handleWithdraw}
-          disabled={withdrawing || !data || data.balanceUsdc === 0}
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg font-medium transition-colors"
-        >
-          {withdrawing ? 'Withdrawing…' : 'Withdraw'}
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <select
+            value={withdrawChain}
+            onChange={(e) => setWithdrawChain(e.target.value)}
+            disabled={withdrawing}
+            className="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+          >
+            <option value="baseSepolia">Base Sepolia</option>
+            <option value="arbitrumSepolia">Arbitrum Sepolia</option>
+            <option value="optimismSepolia">Optimism Sepolia</option>
+            <option value="avalancheFuji">Avalanche Fuji</option>
+          </select>
+          <button
+            onClick={handleWithdraw}
+            disabled={withdrawing || !data || data.balanceUsdc === 0}
+            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg font-medium transition-colors"
+          >
+            {withdrawing ? 'Withdrawing…' : `Withdraw $${data?.balanceUsdc.toFixed(4) ?? '0'} USDC`}
+          </button>
+        </div>
         {withdrawResult && (
           <div className="text-sm text-green-400 space-y-1">
             <p>Withdrawn ${withdrawResult.amount} USDC → {withdrawResult.destinationChain}</p>

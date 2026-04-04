@@ -31,11 +31,11 @@ export async function GET() {
 
           let balanceUsdc = 0
           try {
-            const units = await fetchGatewayBalance(
+            const balance = await fetchGatewayBalance(
               nanocrawlConfig.sellerWallet,
               ARC_TESTNET.domainId,
             )
-            balanceUsdc = unitsToUsdc(units)
+            balanceUsdc = parseFloat(balance)
           } catch {
             // Balance fetch failing should not kill the SSE stream
           }

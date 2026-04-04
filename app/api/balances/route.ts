@@ -17,7 +17,7 @@ export async function GET() {
 
     return NextResponse.json({
       usdc: balanceUnits,
-      usdcHuman: unitsToUsdc(balanceUnits),
+      usdcHuman: parseFloat(balanceUnits),
       network: nanocrawlConfig.network,
     })
   } catch (err) {
