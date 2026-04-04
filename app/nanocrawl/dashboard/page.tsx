@@ -4,7 +4,7 @@
 // Uses SSE (/api/events) for real-time updates. No polling interval management needed.
 // This is the "second screen" during the demo — must look polished and update live.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PaymentEvent } from '../../../shared/types'
 import { ARC_TESTNET } from '../../../shared/config'
 
@@ -22,20 +22,25 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [withdrawing, setWithdrawing] = useState(false)
   const [withdrawChain, setWithdrawChain] = useState('arcTestnet')
+  const [withdrawAmount, setWithdrawAmount] = useState('')
   const [withdrawResult, setWithdrawResult] = useState<{ mintTxHash: string; amount: string; destinationChain: string } | null>(null)
   const [withdrawError, setWithdrawError] = useState<string | null>(null)
 
-  // Subscribe to SSE stream
+  // Subscribe to SSE stream; seed withdrawAmount from first load only
+  const withdrawAmountSeeded = useRef(false)
   useEffect(() => {
     const es = new EventSource('/api/events')
     es.onmessage = (e) => {
       try {
-        setData(JSON.parse(e.data) as DashboardData)
+        const d = JSON.parse(e.data) as DashboardData
+        setData(d)
+        if (!withdrawAmountSeeded.current && d.balanceUsdc > 0) {
+          setWithdrawAmount(d.balanceUsdc.toFixed(6))
+          withdrawAmountSeeded.current = true
+        }
       } catch {}
     }
-    es.onerror = () => {
-      // Browser auto-reconnects on error
-    }
+    es.onerror = () => {}
     return () => es.close()
   }, [])
 
@@ -44,7 +49,7 @@ export default function DashboardPage() {
     setWithdrawError(null)
     setWithdrawResult(null)
     try {
-      const amount = data?.balanceUsdc.toFixed(6) ?? '0'
+      const amount = withdrawAmount || data?.balanceUsdc.toFixed(6) || '0'
       const res = await fetch('/api/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,13 +105,37 @@ export default function DashboardPage() {
       </div>
 
       {/* Withdraw */}
-      <div className="bg-gray-900 rounded-xl p-6 space-y-3">
-        <h2 className="font-semibold">Withdraw to Wallet</h2>
-        <p className="text-sm text-gray-400">
-          Transfer accumulated USDC from Circle Gateway to your on-chain wallet.
-          This is an on-chain transaction — visible on Blockscout.
-        </p>
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="bg-gray-900 rounded-xl p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold">Withdraw to Wallet</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Move USDC from Circle Gateway to your on-chain wallet — same chain or via CCTP cross-chain.
+            Pre-filled with your full balance for a one-click sweep.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Amount input */}
+          <div className="flex items-center bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+            <span className="text-gray-500 text-sm pl-3">$</span>
+            <input
+              type="number"
+              min="0"
+              step="0.001"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              disabled={withdrawing}
+              className="bg-transparent text-gray-200 text-sm px-2 py-2 w-28 focus:outline-none"
+              placeholder="0.000000"
+            />
+            <button
+              onClick={() => setWithdrawAmount(data?.balanceUsdc.toFixed(6) ?? '')}
+              disabled={withdrawing}
+              className="text-xs text-blue-400 hover:text-blue-300 px-3 py-2 border-l border-gray-700 transition-colors"
+            >
+              Max
+            </button>
+          </div>
+          {/* Chain selector */}
           <select
             value={withdrawChain}
             onChange={(e) => setWithdrawChain(e.target.value)}
@@ -119,12 +148,17 @@ export default function DashboardPage() {
             <option value="optimismSepolia">Optimism Sepolia (CCTP)</option>
             <option value="avalancheFuji">Avalanche Fuji (CCTP)</option>
           </select>
+          {/* Submit */}
           <button
             onClick={handleWithdraw}
-            disabled={withdrawing || !data || data.balanceUsdc === 0}
+            disabled={withdrawing || !data || data.balanceUsdc === 0 || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
             className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg font-medium transition-colors"
           >
-            {withdrawing ? 'Withdrawing…' : `Withdraw $${data?.balanceUsdc.toFixed(4) ?? '0'} USDC`}
+            {withdrawing
+              ? 'Withdrawing…'
+              : parseFloat(withdrawAmount) >= (data?.balanceUsdc ?? 0) - 0.000001
+                ? 'Sweep All'
+                : 'Withdraw'}
           </button>
         </div>
         {withdrawResult && (
