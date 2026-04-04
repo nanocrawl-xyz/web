@@ -14,6 +14,8 @@ const CHAIN_EXPLORER: Record<string, string> = {
   arbitrumSepolia:  'https://sepolia.arbiscan.io/tx/',
   optimismSepolia:  'https://sepolia-optimism.etherscan.io/tx/',
   avalancheFuji:    'https://testnet.snowtrace.io/tx/',
+  unichainSepolia:  'https://sepolia.uniscan.xyz/tx/',
+  sepolia:          'https://sepolia.etherscan.io/tx/',
 }
 
 const CHAIN_LABELS: Record<string, string> = {
@@ -22,10 +24,12 @@ const CHAIN_LABELS: Record<string, string> = {
   arbitrumSepolia:  'Arbitrum Sepolia (CCTP)',
   optimismSepolia:  'Optimism Sepolia (CCTP)',
   avalancheFuji:    'Avalanche Fuji (CCTP)',
+  unichainSepolia:  'Unichain Sepolia (CCTP)',
+  sepolia:          'Ethereum Sepolia (CCTP)',
 }
 
 // Arc always works (USDC = gas); others require ETH on destination
-const CCTP_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji']
+const CCTP_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji', 'unichainSepolia', 'sepolia']
 
 interface DashboardData {
   payments: PaymentEvent[]
