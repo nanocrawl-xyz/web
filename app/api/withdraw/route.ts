@@ -13,8 +13,9 @@
 export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { recordWithdrawal } from '../../../lib/payments-store'
 
-const SUPPORTED_CHAINS = ['baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji'] as const
+const SUPPORTED_CHAINS = ['arcTestnet', 'baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji'] as const
 type SupportedChain = typeof SUPPORTED_CHAINS[number]
 
 export async function POST(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { amount, destinationChain = 'baseSepolia', recipientAddress } = body
+  const { amount, destinationChain = 'arcTestnet', recipientAddress } = body
   const typedChain = destinationChain as SupportedChain
 
   if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
@@ -71,6 +72,9 @@ export async function POST(request: NextRequest) {
     })
 
     const mintTxHash = result?.mintTxHash ?? result?.hash ?? String(result)
+
+    // Record withdrawal so Lifetime Earned stays accurate after balance is cleared
+    await recordWithdrawal(parseFloat(amount))
 
     return NextResponse.json({
       success: true,

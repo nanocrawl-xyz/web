@@ -11,7 +11,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
-import { getRecentPayments, getTotalRevenue, getRevenueByRoute } from '../../../lib/payments-store'
+import { getRecentPayments, getTotalRevenue, getRevenueByRoute, getTotalWithdrawn } from '../../../lib/payments-store'
 import { fetchGatewayBalance } from '../../../lib/settle'
 import nanocrawlConfig, { unitsToUsdc } from '../../../nanocrawl.config'
 import { ARC_TESTNET } from '../../../shared/config'
@@ -27,6 +27,7 @@ export async function GET() {
         try {
           const payments = await getRecentPayments(50)
           const totalRevenue = await getTotalRevenue()
+          const totalWithdrawn = await getTotalWithdrawn()
           const revenueByRoute = await getRevenueByRoute()
 
           let balanceUsdc = 0
@@ -43,6 +44,8 @@ export async function GET() {
           const data = JSON.stringify({
             payments,
             totalRevenue,
+            totalWithdrawn,
+            lifetimeEarned: totalRevenue + totalWithdrawn,
             revenueByRoute,
             balanceUsdc,
             ts: Date.now(),

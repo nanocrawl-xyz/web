@@ -56,6 +56,17 @@ async function kvGetAllPayments(): Promise<PaymentEvent[]> {
   return items.map((item) => JSON.parse(item) as PaymentEvent)
 }
 
+async function kvRecordWithdrawal(amountUsdc: number): Promise<void> {
+  const r = await getRedis()
+  await r.incrByFloat('withdrawals:total', amountUsdc)
+}
+
+async function kvGetTotalWithdrawn(): Promise<number> {
+  const r = await getRedis()
+  const val = await r.get('withdrawals:total')
+  return val ? parseFloat(val) : 0
+}
+
 // ── SQLite helpers ────────────────────────────────────────────────────────
 
 function resolveDbPath(): string {
@@ -190,6 +201,26 @@ export async function getRevenueByRoute(): Promise<Record<string, number>> {
     FROM payments GROUP BY route ORDER BY total DESC
   `).all() as { route: string; total: number }[]
   return Object.fromEntries(rows.map((r) => [r.route, r.total]))
+}
+
+export async function recordWithdrawal(amountUsdc: number): Promise<void> {
+  if (useKv()) return kvRecordWithdrawal(amountUsdc)
+  const db = getDb()
+  db.prepare(`
+    CREATE TABLE IF NOT EXISTS withdrawals (id INTEGER PRIMARY KEY, amount_usdc REAL NOT NULL, timestamp INTEGER NOT NULL)
+  `).run()
+  db.prepare('INSERT INTO withdrawals (amount_usdc, timestamp) VALUES (?, ?)').run(amountUsdc, Date.now())
+}
+
+export async function getTotalWithdrawn(): Promise<number> {
+  if (useKv()) return kvGetTotalWithdrawn()
+  const db = getDb()
+  try {
+    const result = db.prepare('SELECT COALESCE(SUM(amount_usdc), 0) AS total FROM withdrawals').get() as { total: number }
+    return result.total
+  } catch {
+    return 0
+  }
 }
 
 // For testing only — resets the SQLite singleton so NANOCRAWL_DB_PATH is re-read.

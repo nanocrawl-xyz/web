@@ -11,6 +11,8 @@ import { ARC_TESTNET } from '../../../shared/config'
 interface DashboardData {
   payments: PaymentEvent[]
   totalRevenue: number
+  totalWithdrawn: number
+  lifetimeEarned: number
   revenueByRoute: Record<string, number>
   balanceUsdc: number
   ts: number
@@ -19,7 +21,7 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [withdrawing, setWithdrawing] = useState(false)
-  const [withdrawChain, setWithdrawChain] = useState('baseSepolia')
+  const [withdrawChain, setWithdrawChain] = useState('arcTestnet')
   const [withdrawResult, setWithdrawResult] = useState<{ mintTxHash: string; amount: string; destinationChain: string } | null>(null)
   const [withdrawError, setWithdrawError] = useState<string | null>(null)
 
@@ -77,18 +79,22 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard
-          label="Total Revenue"
-          value={data ? `$${data.totalRevenue.toFixed(4)} USDC` : '—'}
+          label="Lifetime Earned"
+          value={data ? `$${data.lifetimeEarned.toFixed(4)}` : '—'}
           accent
         />
         <StatCard
           label="Gateway Balance"
-          value={data ? `$${data.balanceUsdc.toFixed(4)} USDC` : '—'}
+          value={data ? `$${data.balanceUsdc.toFixed(4)}` : '—'}
         />
         <StatCard
-          label="Payments Received"
+          label="Total Withdrawn"
+          value={data ? `$${data.totalWithdrawn.toFixed(4)}` : '—'}
+        />
+        <StatCard
+          label="Payments"
           value={data ? String(data.payments.length) : '—'}
         />
       </div>
@@ -107,10 +113,11 @@ export default function DashboardPage() {
             disabled={withdrawing}
             className="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
           >
-            <option value="baseSepolia">Base Sepolia</option>
-            <option value="arbitrumSepolia">Arbitrum Sepolia</option>
-            <option value="optimismSepolia">Optimism Sepolia</option>
-            <option value="avalancheFuji">Avalanche Fuji</option>
+            <option value="arcTestnet">Arc Testnet (same chain)</option>
+            <option value="baseSepolia">Base Sepolia (CCTP)</option>
+            <option value="arbitrumSepolia">Arbitrum Sepolia (CCTP)</option>
+            <option value="optimismSepolia">Optimism Sepolia (CCTP)</option>
+            <option value="avalancheFuji">Avalanche Fuji (CCTP)</option>
           </select>
           <button
             onClick={handleWithdraw}
