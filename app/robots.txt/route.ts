@@ -9,7 +9,7 @@
 
 import { NextResponse } from 'next/server'
 import nanocrawlConfig, { priceForPath } from '../../nanocrawl.config'
-import { ARC_TESTNET, X402_SCHEME, EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from '../../shared/config'
+import { ARC_TESTNET, BASE_SEPOLIA, EIP712_DOMAIN_NAME } from '../../shared/config'
 
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -32,13 +32,19 @@ Crawl-fee: ${defaultPrice} USDC
 # Minimal fields (standard flow)
 Payment-Endpoint: ${appUrl}/products
 
-# Full fields (enables proactive single-request flow — no 402 round-trip)
+# Supported networks (agent picks one — both use Circle Gateway)
+# Network 1: Arc Testnet (USDC = native gas, recommended)
 Payment-Network: ${ARC_TESTNET.caip2}
 Payment-Asset: ${ARC_TESTNET.usdc}
 Payment-PayTo: ${nanocrawlConfig.sellerWallet}
 Payment-Scheme: ${EIP712_DOMAIN_NAME}
 Payment-VerifyingContract: ${ARC_TESTNET.gatewayWallet}
 Payment-MaxTimeoutSeconds: ${nanocrawlConfig.maxTimeoutSeconds}
+
+# Network 2: Base Sepolia (supports Unlink privacy layer)
+Payment-Network-Alt: ${BASE_SEPOLIA.caip2}
+Payment-Asset-Alt: ${BASE_SEPOLIA.usdc}
+Payment-VerifyingContract-Alt: ${BASE_SEPOLIA.gatewayWallet}
 
 # Tiered pricing
 Crawl-fee-path: /products/* ${defaultPrice} USDC

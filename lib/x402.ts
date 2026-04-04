@@ -13,30 +13,34 @@ import {
   X402_SCHEME,
   EIP712_DOMAIN_NAME,
   EIP712_DOMAIN_VERSION,
+  SUPPORTED_NETWORKS,
+  SupportedNetwork,
 } from '../shared/config'
 import type { PaymentRequired, PaymentRequirements, SettlementResponse } from '../shared/types'
 
-// Build the PaymentRequirements entry for the accepts[] array
+// Build a PaymentRequirements entry for one network
 export function buildPaymentRequirements(
   path: string,
   config: NanocrawlConfig,
+  network: SupportedNetwork = SUPPORTED_NETWORKS[0],
 ): PaymentRequirements {
   return {
     scheme: X402_SCHEME,
-    network: config.network,
-    asset: config.asset,
+    network: network.caip2,
+    asset: network.usdc,
     amount: usdcToUnits(priceForPath(path)),
     payTo: config.sellerWallet,
     maxTimeoutSeconds: config.maxTimeoutSeconds,
     extra: {
       name: EIP712_DOMAIN_NAME,
       version: EIP712_DOMAIN_VERSION,
-      verifyingContract: config.verifyingContract,
+      verifyingContract: network.gatewayWallet,
     },
   }
 }
 
 // Build the full PaymentRequired object (goes in response body + PAYMENT-REQUIRED header)
+// accepts[] includes all supported networks — agent picks one
 export function buildPaymentRequired(
   request: NextRequest,
   config: NanocrawlConfig,
@@ -49,7 +53,7 @@ export function buildPaymentRequired(
       mimeType: 'application/json',
       description: 'NanoCrawl paid content',
     },
-    accepts: [buildPaymentRequirements(path, config)],
+    accepts: SUPPORTED_NETWORKS.map(network => buildPaymentRequirements(path, config, network)),
   }
 }
 

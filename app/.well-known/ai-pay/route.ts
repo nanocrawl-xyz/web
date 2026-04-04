@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server'
 import nanocrawlConfig, { priceForPath } from '../../../nanocrawl.config'
-import { ARC_TESTNET, X402_VERSION, X402_SCHEME, EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from '../../../shared/config'
+import { SUPPORTED_NETWORKS, X402_VERSION, X402_SCHEME, EIP712_DOMAIN_NAME, EIP712_DOMAIN_VERSION } from '../../../shared/config'
 
 export async function GET() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -12,34 +12,28 @@ export async function GET() {
   const defaultPriceUnits = Math.round(defaultPrice * 10 ** 6).toString()
 
   const manifest = {
-    // Protocol identification
     protocol: 'x402',
     version: X402_VERSION,
-
-    // Human-readable info
     name: 'NanoCrawl',
     description: 'HTTP-native micropayments for AI data access. Publishers set a price; AI agents pay per page.',
     url: appUrl,
 
-    // Payment parameters (mirrors what the 402 PAYMENT-REQUIRED header contains)
-    // Agents can use these to pre-sign EIP-3009 and skip the 402 round-trip entirely.
-    accepts: [
-      {
-        scheme: X402_SCHEME,
-        network: ARC_TESTNET.caip2,
-        asset: ARC_TESTNET.usdc,
-        defaultAmount: defaultPriceUnits,
-        payTo: nanocrawlConfig.sellerWallet,
-        maxTimeoutSeconds: nanocrawlConfig.maxTimeoutSeconds,
-        extra: {
-          name: EIP712_DOMAIN_NAME,
-          version: EIP712_DOMAIN_VERSION,
-          verifyingContract: ARC_TESTNET.gatewayWallet,
-        },
+    // All supported networks — agent picks one. Arc Testnet is recommended (USDC = gas).
+    // Base Sepolia included for Unlink privacy layer support.
+    accepts: SUPPORTED_NETWORKS.map(network => ({
+      scheme: X402_SCHEME,
+      network: network.caip2,
+      asset: network.usdc,
+      defaultAmount: defaultPriceUnits,
+      payTo: nanocrawlConfig.sellerWallet,
+      maxTimeoutSeconds: nanocrawlConfig.maxTimeoutSeconds,
+      extra: {
+        name: EIP712_DOMAIN_NAME,
+        version: EIP712_DOMAIN_VERSION,
+        verifyingContract: network.gatewayWallet,
       },
-    ],
+    })),
 
-    // Paid routes with per-route pricing
     routes: [
       {
         pathPattern: '/products/*',
@@ -49,7 +43,6 @@ export async function GET() {
       },
     ],
 
-    // Discovery links
     links: {
       robotsTxt: `${appUrl}/robots.txt`,
       dashboard: `${appUrl}/nanocrawl/dashboard`,
@@ -57,16 +50,14 @@ export async function GET() {
       docsMerchant: `${appUrl}/docs/merchant`,
     },
 
-    // Network details for agent setup
-    network: {
-      name: 'Arc Testnet',
-      chainId: ARC_TESTNET.chainId,
-      caip2: ARC_TESTNET.caip2,
-      usdcAddress: ARC_TESTNET.usdc,
-      gatewayWallet: ARC_TESTNET.gatewayWallet,
-      explorer: ARC_TESTNET.explorer,
-      faucet: ARC_TESTNET.faucet,
-    },
+    networks: SUPPORTED_NETWORKS.map(n => ({
+      name: n.name,
+      chainId: n.chainId,
+      caip2: n.caip2,
+      usdcAddress: n.usdc,
+      gatewayWallet: n.gatewayWallet,
+      explorer: n.explorer,
+    })),
   }
 
   return NextResponse.json(manifest, {

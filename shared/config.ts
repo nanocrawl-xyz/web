@@ -15,6 +15,29 @@ export const ARC_TESTNET = {
   faucet: 'https://faucet.circle.com',
 } as const
 
+// Base Sepolia — required for Unlink privacy layer (Unlink is only deployed here)
+export const BASE_SEPOLIA = {
+  chainId: 84532,
+  caip2: 'eip155:84532',
+  domainId: 6,
+  name: 'baseSepolia',
+  usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+  gatewayWallet: '0x0077777d7EBA4688BDeF3E311b846F25870A19B9',
+  gatewayMinter: '0x0022222ABE238Cc2C7Bb1f21003F0a260052475B',
+  rpc: 'https://sepolia.base.org',
+  explorer: 'https://sepolia.basescan.org',
+  faucet: 'https://faucet.circle.com',
+} as const
+
+// All supported payment networks — Arc first (default for agents that don't specify)
+export const SUPPORTED_NETWORKS = [ARC_TESTNET, BASE_SEPOLIA] as const
+export type SupportedNetwork = typeof SUPPORTED_NETWORKS[number]
+
+// Lookup by CAIP-2 string (e.g. "eip155:5042002")
+export function getNetworkByCaip2(caip2: string): SupportedNetwork | undefined {
+  return SUPPORTED_NETWORKS.find(n => n.caip2 === caip2)
+}
+
 export const CIRCLE_GATEWAY = {
   settleEndpoint: 'https://gateway-api-testnet.circle.com/v1/x402/settle',
   balancesEndpoint: 'https://gateway-api-testnet.circle.com/v1/balances',
