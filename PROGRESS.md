@@ -178,11 +178,12 @@ crawlers find it by convention. .well-known/ai-pay = typed JSON bootstrap for ag
 - [x] Withdrawal history table on dashboard
 - [x] Architecture diagram: shortcut flow annotation, withdrawal deemphasis
 - [x] /docs/merchant: discovery layer (robots.txt + .well-known/ai-pay) positioning
-- [ ] **Phase 1.5 — Multi-network seller (Base Sepolia)** — required for Unlink privacy demo
-  - Add `baseSepolia` to `accepts[]` in 402 response
-  - Detect incoming payment network; init GatewayClient for correct chain
-  - Update robots.txt to advertise both networks
-  - Fund seller Gateway balance on Base Sepolia
+- [x] **Phase 1.5 — Multi-network seller (Arc Testnet + Base Sepolia)**
+  - `accepts[]` in 402 response now has both networks — agent picks one
+  - `fetchGatewayBalance()` queries both chains, returns combined total
+  - robots.txt and `.well-known/ai-pay` advertise both networks
+  - BatchFacilitatorClient.settle() is network-agnostic — no code change needed
+  - **Still needed:** fund seller Gateway balance on Base Sepolia (manual step via faucet + deposit)
 - [ ] **Person A integration** — MCP server + live AI agent demo (critical for judging)
 - [ ] **Unlink privacy demo** — depends on Phase 1.5 + Person A
 - [ ] Connect GitHub repo to Vercel for auto-deploy (blocked on private org repo)
