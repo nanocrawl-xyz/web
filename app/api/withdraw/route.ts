@@ -15,7 +15,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { recordWithdrawal } from '../../../lib/payments-store'
 
-const SUPPORTED_CHAINS = ['arcTestnet', 'baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji'] as const
+const SUPPORTED_CHAINS = ['arcTestnet', 'baseSepolia', 'arbitrumSepolia', 'optimismSepolia', 'avalancheFuji', 'unichainSepolia', 'sepolia'] as const
 type SupportedChain = typeof SUPPORTED_CHAINS[number]
 
 export async function POST(request: NextRequest) {
