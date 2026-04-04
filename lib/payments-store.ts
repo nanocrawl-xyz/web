@@ -6,7 +6,7 @@
 // All exported functions are async so callers work with either backend.
 
 import { v4 as uuidv4 } from 'uuid'
-import type { PaymentEvent } from '../shared/types'
+import type { PaymentEvent, WithdrawalEvent } from '../shared/types'
 
 // ── Backend selection ─────────────────────────────────────────────────────
 
@@ -56,15 +56,22 @@ async function kvGetAllPayments(): Promise<PaymentEvent[]> {
   return items.map((item) => JSON.parse(item) as PaymentEvent)
 }
 
-async function kvRecordWithdrawal(amountUsdc: number): Promise<void> {
+async function kvRecordWithdrawal(event: WithdrawalEvent): Promise<void> {
   const r = await getRedis()
-  await r.incrByFloat('withdrawals:total', amountUsdc)
+  await r.incrByFloat('withdrawals:total', event.amountUsdc)
+  await r.lPush('withdrawals:list', JSON.stringify(event))
 }
 
 async function kvGetTotalWithdrawn(): Promise<number> {
   const r = await getRedis()
   const val = await r.get('withdrawals:total')
   return val ? parseFloat(val) : 0
+}
+
+async function kvGetRecentWithdrawals(limit: number): Promise<WithdrawalEvent[]> {
+  const r = await getRedis()
+  const items = await r.lRange('withdrawals:list', 0, limit - 1)
+  return items.map((item) => JSON.parse(item) as WithdrawalEvent)
 }
 
 // ── SQLite helpers ────────────────────────────────────────────────────────
@@ -203,13 +210,32 @@ export async function getRevenueByRoute(): Promise<Record<string, number>> {
   return Object.fromEntries(rows.map((r) => [r.route, r.total]))
 }
 
-export async function recordWithdrawal(amountUsdc: number): Promise<void> {
-  if (useKv()) return kvRecordWithdrawal(amountUsdc)
+export async function recordWithdrawal(
+  amountUsdc: number,
+  chain = 'arcTestnet',
+  txHash = '',
+): Promise<void> {
+  const event: WithdrawalEvent = {
+    id: uuidv4(),
+    amountUsdc,
+    chain,
+    txHash,
+    timestamp: Date.now(),
+  }
+  if (useKv()) return kvRecordWithdrawal(event)
+
   const db = getDb()
   db.prepare(`
-    CREATE TABLE IF NOT EXISTS withdrawals (id INTEGER PRIMARY KEY, amount_usdc REAL NOT NULL, timestamp INTEGER NOT NULL)
+    CREATE TABLE IF NOT EXISTS withdrawals (
+      id         TEXT PRIMARY KEY,
+      amount_usdc REAL NOT NULL,
+      chain      TEXT NOT NULL DEFAULT 'arcTestnet',
+      tx_hash    TEXT NOT NULL DEFAULT '',
+      timestamp  INTEGER NOT NULL
+    )
   `).run()
-  db.prepare('INSERT INTO withdrawals (amount_usdc, timestamp) VALUES (?, ?)').run(amountUsdc, Date.now())
+  db.prepare('INSERT OR IGNORE INTO withdrawals (id, amount_usdc, chain, tx_hash, timestamp) VALUES (?, ?, ?, ?, ?)')
+    .run(event.id, event.amountUsdc, event.chain, event.txHash, event.timestamp)
 }
 
 export async function getTotalWithdrawn(): Promise<number> {
@@ -220,6 +246,25 @@ export async function getTotalWithdrawn(): Promise<number> {
     return result.total
   } catch {
     return 0
+  }
+}
+
+export async function getRecentWithdrawals(limit = 50): Promise<WithdrawalEvent[]> {
+  if (useKv()) return kvGetRecentWithdrawals(limit)
+  const db = getDb()
+  try {
+    const rows = db.prepare(
+      'SELECT * FROM withdrawals ORDER BY timestamp DESC LIMIT ?'
+    ).all(limit) as { id: string; amount_usdc: number; chain: string; tx_hash: string; timestamp: number }[]
+    return rows.map((r) => ({
+      id: r.id,
+      amountUsdc: r.amount_usdc,
+      chain: r.chain,
+      txHash: r.tx_hash,
+      timestamp: r.timestamp,
+    }))
+  } catch {
+    return []
   }
 }
 

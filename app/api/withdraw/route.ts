@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const mintTxHash = result?.mintTxHash ?? result?.hash ?? String(result)
 
     // Record withdrawal so Lifetime Earned stays accurate after balance is cleared
-    await recordWithdrawal(parseFloat(amount))
+    await recordWithdrawal(parseFloat(amount), destinationChain, mintTxHash)
 
     return NextResponse.json({
       success: true,

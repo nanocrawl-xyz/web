@@ -11,7 +11,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
-import { getRecentPayments, getTotalRevenue, getRevenueByRoute, getTotalWithdrawn } from '../../../lib/payments-store'
+import { getRecentPayments, getTotalRevenue, getRevenueByRoute, getTotalWithdrawn, getRecentWithdrawals } from '../../../lib/payments-store'
 import { fetchGatewayBalance } from '../../../lib/settle'
 import nanocrawlConfig, { unitsToUsdc } from '../../../nanocrawl.config'
 import { ARC_TESTNET } from '../../../shared/config'
@@ -29,6 +29,7 @@ export async function GET() {
           const totalRevenue = await getTotalRevenue()
           const totalWithdrawn = await getTotalWithdrawn()
           const revenueByRoute = await getRevenueByRoute()
+          const withdrawals = await getRecentWithdrawals(20)
 
           let balanceUsdc = 0
           try {
@@ -47,6 +48,7 @@ export async function GET() {
             totalWithdrawn,
             lifetimeEarned: balanceUsdc + totalWithdrawn,
             revenueByRoute,
+            withdrawals,
             balanceUsdc,
             ts: Date.now(),
           })

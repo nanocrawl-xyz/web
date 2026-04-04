@@ -97,3 +97,12 @@ export interface WithdrawResult {
   amount: string
   network: string
 }
+
+// One entry in the withdrawal log
+export interface WithdrawalEvent {
+  id: string          // UUID
+  amountUsdc: number  // human-readable
+  chain: string       // e.g. "arcTestnet", "baseSepolia"
+  txHash: string      // mint tx hash on destination chain
+  timestamp: number   // unix ms
+}

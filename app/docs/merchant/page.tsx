@@ -24,6 +24,102 @@ export default function MerchantPage() {
         </p>
       </section>
 
+      {/* What you get */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">What NanoCrawl adds to your site</h2>
+        <p className="text-gray-400 text-sm">
+          One integration gives you four things. The first two are automatic — no extra config needed.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              num: '①',
+              title: 'Discovery — robots.txt',
+              desc: 'Auto-served at /robots.txt with payment metadata: price, network, seller address, verifying contract. Any crawler that follows web standards finds it immediately.',
+              note: 'RFC 9309 · auto',
+              color: 'border-gray-700',
+            },
+            {
+              num: '②',
+              title: 'Discovery — .well-known/ai-pay',
+              desc: 'Auto-served JSON manifest at /.well-known/ai-pay. Agents and SDKs parse it to bootstrap a GatewayClient without hitting a 402 first. Typed structured data.',
+              note: 'Emerging standard · auto',
+              color: 'border-gray-700',
+            },
+            {
+              num: '③',
+              title: 'Payment gating',
+              desc: 'Middleware classifies requests as crawler vs human. Crawlers get a 402 with PAYMENT-REQUIRED header. Humans pass through. One import.',
+              note: 'Next.js or CF Worker · configure',
+              color: 'border-blue-900',
+            },
+            {
+              num: '④',
+              title: 'Settlement + dashboard',
+              desc: 'Circle Gateway verifies EIP-3009 sigs, locks funds. Revenue streams to the dashboard in real time. Withdraw to any chain via CCTP.',
+              note: 'Circle Gateway · configure',
+              color: 'border-blue-900',
+            },
+          ].map(({ num, title, desc, note, color }) => (
+            <div key={num} className={`bg-gray-900 rounded-xl p-5 border ${color} space-y-2`}>
+              <div className="flex items-center gap-2">
+                <span className="text-blue-400 font-bold">{num}</span>
+                <span className="font-medium text-sm">{title}</span>
+              </div>
+              <p className="text-gray-400 text-xs leading-relaxed">{desc}</p>
+              <p className="text-gray-600 text-xs font-mono">{note}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Discovery endpoints — already provided */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Discovery endpoints (auto)</h2>
+        <p className="text-gray-400 text-sm">
+          NanoCrawl serves these automatically once the seller wallet is configured.
+          No extra steps needed — they're included in every integration.
+        </p>
+        <div className="space-y-3">
+          <div className="bg-gray-900 rounded-xl p-5 space-y-3 border border-gray-800">
+            <div className="flex items-center justify-between">
+              <code className="text-blue-400 font-mono text-sm">GET /robots.txt</code>
+              <span className="text-xs text-gray-500">RFC 9309 extension</span>
+            </div>
+            <pre className="text-xs text-gray-400 font-mono leading-relaxed overflow-x-auto">{`User-agent: AI-Crawler
+Allow: /products
+Crawl-fee: 0.001 USDC
+
+Payment-Network: eip155:5042002
+Payment-Asset: 0x3600...
+Payment-PayTo: 0xSeller...
+Payment-VerifyingContract: 0x0077...`}</pre>
+            <p className="text-gray-500 text-xs">
+              Enables the proactive flow: agent pre-signs EIP-3009 from this metadata, sends
+              PAYMENT-SIGNATURE on the first request — saves one full HTTP round-trip per page.
+            </p>
+          </div>
+          <div className="bg-gray-900 rounded-xl p-5 space-y-3 border border-gray-800">
+            <div className="flex items-center justify-between">
+              <code className="text-blue-400 font-mono text-sm">GET /.well-known/ai-pay</code>
+              <span className="text-xs text-gray-500">Structured JSON manifest</span>
+            </div>
+            <pre className="text-xs text-gray-400 font-mono leading-relaxed overflow-x-auto">{`{
+  "protocol": "x402",
+  "accepts": [{ "network": "eip155:5042002",
+                "asset": "0x3600...", "amount": "1000",
+                "payTo": "0xSeller...", ... }],
+  "routes": [{ "pathPattern": "/products/*",
+               "amountUsdc": 0.001 }]
+}`}</pre>
+            <p className="text-gray-500 text-xs">
+              Machine-readable bootstrap for agent SDKs. Parse once, cache, use for all requests.
+              Analogous to <code className="bg-gray-800 px-1 rounded">/.well-known/openid-configuration</code>.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Option A: Next.js */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Option A — Next.js middleware</h2>

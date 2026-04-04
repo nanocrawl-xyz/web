@@ -5,7 +5,8 @@
 // This is the "second screen" during the demo — must look polished and update live.
 
 import { useEffect, useRef, useState } from 'react'
-import type { PaymentEvent } from '../../../shared/types'
+import Link from 'next/link'
+import type { PaymentEvent, WithdrawalEvent } from '../../../shared/types'
 import { ARC_TESTNET } from '../../../shared/config'
 
 const CHAIN_EXPLORER: Record<string, string> = {
@@ -35,6 +36,7 @@ interface DashboardData {
   totalWithdrawn: number
   lifetimeEarned: number
   revenueByRoute: Record<string, number>
+  withdrawals: WithdrawalEvent[]
   balanceUsdc: number
   ts: number
 }
@@ -252,19 +254,82 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Transaction feed */}
+      {/* Payment history */}
       <div className="bg-gray-900 rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold">Transaction Feed</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">Payment History</h2>
+          <span className="text-xs text-gray-500">{data?.payments.length ?? 0} payments</span>
+        </div>
         {!data || data.payments.length === 0 ? (
           <p className="text-gray-500 text-sm">Waiting for first payment…</p>
         ) : (
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {data.payments.map((p) => (
-              <PaymentRow key={p.id} payment={p} />
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 uppercase tracking-wide border-b border-gray-800">
+                  <th className="pb-2 pr-4">Time</th>
+                  <th className="pb-2 pr-4">Buyer</th>
+                  <th className="pb-2 pr-4">Page</th>
+                  <th className="pb-2 pr-4 text-right">Amount</th>
+                  <th className="pb-2">Receipt</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {data.payments.map((p) => (
+                  <PaymentRow key={p.id} payment={p} />
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      {/* Withdrawal history */}
+      {data && data.withdrawals && data.withdrawals.length > 0 && (
+        <div className="bg-gray-900 rounded-xl p-6 space-y-4">
+          <h2 className="font-semibold">Withdrawal History</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 uppercase tracking-wide border-b border-gray-800">
+                  <th className="pb-2 pr-4">Time</th>
+                  <th className="pb-2 pr-4">Chain</th>
+                  <th className="pb-2 pr-4 text-right">Amount</th>
+                  <th className="pb-2">Tx</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {data.withdrawals.map((w) => {
+                  const explorerBase = CHAIN_EXPLORER[w.chain]
+                  const txUrl = explorerBase && w.txHash && !w.txHash.startsWith('[')
+                    ? `${explorerBase}${w.txHash}` : null
+                  return (
+                    <tr key={w.id} className="text-gray-300">
+                      <td className="py-2 pr-4 text-gray-500 text-xs whitespace-nowrap">
+                        {new Date(w.timestamp).toLocaleTimeString()}
+                      </td>
+                      <td className="py-2 pr-4 text-xs">
+                        {CHAIN_LABELS[w.chain] ?? w.chain}
+                      </td>
+                      <td className="py-2 pr-4 text-right text-blue-400 font-medium">
+                        ${w.amountUsdc.toFixed(4)}
+                      </td>
+                      <td className="py-2 text-xs font-mono text-gray-500">
+                        {txUrl
+                          ? <a href={txUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300">
+                              {w.txHash.slice(0, 10)}…
+                            </a>
+                          : w.txHash ? `${w.txHash.slice(0, 10)}…` : '—'
+                        }
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
     </main>
   )
@@ -282,38 +347,31 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 }
 
 function PaymentRow({ payment }: { payment: PaymentEvent }) {
-  const explorerUrl = `${ARC_TESTNET.explorer}/tx/${payment.transaction}`
-  const date = new Date(payment.timestamp).toLocaleTimeString()
-
   return (
-    <div className="flex items-center justify-between text-sm border-b border-gray-800 pb-2">
-      <div className="space-y-0.5 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-gray-300 truncate">{payment.page}</span>
-          {payment.cached && (
-            <span className="text-xs bg-gray-700 text-gray-400 px-1.5 py-0.5 rounded shrink-0">
-              cached
-            </span>
-          )}
-        </div>
-        <p className="text-gray-500 text-xs truncate" title={payment.payer}>
-          {payment.payer.slice(0, 10)}…{payment.payer.slice(-6)}
-        </p>
-      </div>
-      <div className="text-right shrink-0 space-y-0.5 pl-4">
-        <p className="text-blue-400 font-medium">${payment.amountUsdc.toFixed(4)}</p>
-        <div className="flex items-center gap-2 justify-end">
-          <span className="text-gray-500 text-xs">{date}</span>
-          <a
-            href={explorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-600 hover:text-gray-400 text-xs underline"
-          >
-            tx
-          </a>
-        </div>
-      </div>
-    </div>
+    <tr className="text-gray-300 hover:bg-gray-800/40 transition-colors">
+      <td className="py-2 pr-4 text-gray-500 text-xs whitespace-nowrap">
+        {new Date(payment.timestamp).toLocaleTimeString()}
+      </td>
+      <td className="py-2 pr-4 font-mono text-xs text-gray-400" title={payment.payer}>
+        {payment.payer.slice(0, 8)}…{payment.payer.slice(-6)}
+      </td>
+      <td className="py-2 pr-4 font-mono text-xs">
+        {payment.page}
+        {payment.cached && (
+          <span className="ml-1.5 text-xs bg-gray-700 text-gray-400 px-1 py-0.5 rounded">cached</span>
+        )}
+      </td>
+      <td className="py-2 pr-4 text-right text-blue-400 font-medium whitespace-nowrap">
+        ${payment.amountUsdc.toFixed(4)}
+      </td>
+      <td className="py-2">
+        <Link
+          href={`/payments/${payment.id}`}
+          className="text-xs text-gray-500 hover:text-gray-300 underline"
+        >
+          receipt
+        </Link>
+      </td>
+    </tr>
   )
 }

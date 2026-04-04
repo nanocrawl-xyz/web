@@ -118,6 +118,52 @@ Base64-encoded JSON with `x402Version`, `payload.authorization`, `payload.signat
 
 ---
 
+## What is working (continued)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `.well-known/ai-pay` JSON manifest | ✅ | `app/.well-known/ai-pay/route.ts` — typed bootstrap for agent SDKs |
+| Payment history table on dashboard | ✅ | Columns: time, buyer, page, amount, receipt link |
+| `/payments/:id` receipt page | ✅ | Full payment detail; honest settlement framing (TEE-verified, batch on-chain async) |
+| Withdrawal history table on dashboard | ✅ | Per-withdrawal records with chain, txHash, explorer link |
+| Withdrawal storage (full events) | ✅ | `WithdrawalEvent` in Redis list + SQLite; chain + txHash stored |
+| Architecture diagram: shortcut flow | ✅ | Left-side bracket shows skip-402 optimization when robots.txt pre-read |
+| Architecture diagram: withdrawal deemphasis | ✅ | Stacked boxes for CCTP destinations, muted arrows |
+| `/docs/merchant`: discovery layer | ✅ | 4-box integration overview; robots.txt + .well-known/ai-pay auto-served |
+| "See It Live" curl demo on landing | ✅ | Two curl commands showing 402 → paid 200 exchange |
+
+---
+
+## Key findings / design decisions
+
+### On-chain settlement transparency (from Arc team discussion)
+Circle Gateway batch settlement is **random** — no correlation between buyers/sellers in a batch.
+Intent is 100k individual settles brought on-chain together. Arc team has indexing tooling planned
+but nothing available yet. **Implications:**
+- No per-payment on-chain tx hash exists. Receipt page shows Circle Gateway UUID (TEE-verified) — honest framing.
+- "Cryptographic not accounting" claim is still valid: EIP-3009 sig verified by TEE per request.
+- On-chain settlement is asynchronous at Gateway discretion. Diagram updated accordingly.
+- Arc block explorer cannot be used to show individual payments.
+
+### Multiple buyers / seller-centric dashboard
+Dashboard is seller-centric (all buyers aggregated). Per-buyer view (filter by payer address)
+is possible from existing data but deferred. Buyer address is stored on every PaymentEvent.
+
+### Unlink privacy layer (from Unlink team discussion)
+Unlink is deployed on **Base Sepolia only** (not Arc Testnet). To demo private agentic payments:
+- Seller must accept x402 payments on Base Sepolia (Phase 1.5 — multi-network support)
+- Buyer (Person A) uses Unlink BurnerWallet: ephemeral EOA funded from ZK pool
+- On-chain: burner address visible, not real agent — buyer identity shielded
+- Receipt page already notes: "may be an Unlink burner for buyer privacy"
+- Narrative: "first private agentic nanopayments" — strong hackathon differentiator
+
+### robots.txt vs .well-known/ai-pay (complementary, not redundant)
+Both are seller-side endpoints auto-served by NanoCrawl. robots.txt = RFC 9309 extension,
+crawlers find it by convention. .well-known/ai-pay = typed JSON bootstrap for agent SDKs
+(analogous to /.well-known/openid-configuration). Documented in /docs/merchant.
+
+---
+
 ## Pending
 
 - [x] Vercel deploy — https://nanocrawl.vercel.app
@@ -127,9 +173,18 @@ Base64-encoded JSON with `x402Version`, `payload.authorization`, `payload.signat
 - [x] Robustness tests (`lib/__tests__/verify-and-serve.test.ts`) — 93 tests total
 - [x] Dashboard: Lifetime Earned, withdrawal tracking, chain dropdown with gas filter
 - [x] /docs/merchant and /docs/buyer sub-pages with hero CTA buttons
-- [ ] Connect GitHub repo to Vercel for auto-deploy on push (currently deploying manually with `vercel --prod`)
-- [ ] `.well-known/ai-pay` JSON endpoint
-- [ ] Landing page copy rework — current positioning section is too CF-centric without context; needs full rewrite once demo audience is clearer. Keep structure, rework prose.
-- [ ] Architecture diagram fine-tuning — SVG is live, review with fresh eyes
-- [ ] Person A integration — MCP server + live AI agent demo (critical for judging)
+- [x] `.well-known/ai-pay` JSON endpoint
+- [x] Payment history table + `/payments/:id` receipt page
+- [x] Withdrawal history table on dashboard
+- [x] Architecture diagram: shortcut flow annotation, withdrawal deemphasis
+- [x] /docs/merchant: discovery layer (robots.txt + .well-known/ai-pay) positioning
+- [ ] **Phase 1.5 — Multi-network seller (Base Sepolia)** — required for Unlink privacy demo
+  - Add `baseSepolia` to `accepts[]` in 402 response
+  - Detect incoming payment network; init GatewayClient for correct chain
+  - Update robots.txt to advertise both networks
+  - Fund seller Gateway balance on Base Sepolia
+- [ ] **Person A integration** — MCP server + live AI agent demo (critical for judging)
+- [ ] **Unlink privacy demo** — depends on Phase 1.5 + Person A
+- [ ] Connect GitHub repo to Vercel for auto-deploy (blocked on private org repo)
+- [ ] Landing page copy rework — defer until demo audience clearer
 - [ ] Add cross-chain buyer note to /docs/buyer (future roadmap item)

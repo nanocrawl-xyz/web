@@ -146,6 +146,48 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Try it — curl demo */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">See It Live</h2>
+        <p className="text-sm text-gray-500">
+          Two curl commands. The protocol is plain HTTP — no SDK, no wallet, no account.
+        </p>
+        <div className="bg-gray-950 rounded-xl border border-gray-800 overflow-hidden text-sm font-mono">
+          <div className="px-4 py-2 border-b border-gray-800 text-gray-500 text-xs">
+            Step 1 — hit a paid page, get a 402
+          </div>
+          <pre className="px-4 py-3 text-gray-300 overflow-x-auto whitespace-pre">{`curl -si https://nanocrawl.vercel.app/products/1 \\
+  -H "User-Agent: AI-Crawler/1.0" \\
+  | head -6
+
+# HTTP/2 402
+# payment-required: eyJ4NDAyVmVyc2lvbiI6MiwiYWNjZXB0cy...
+# content-type: application/json
+#
+# {"x402Version":2,"accepts":[{"scheme":"exact","network":"eip155:5042002",
+#  "asset":"0x3600...","amount":"1000","payTo":"0xSeller..."}]}`}</pre>
+          <div className="px-4 py-2 border-t border-b border-gray-800 text-gray-500 text-xs">
+            Step 2 — sign EIP-3009 off-chain, retry with signature
+          </div>
+          <pre className="px-4 py-3 text-gray-300 overflow-x-auto whitespace-pre">{`curl -si https://nanocrawl.vercel.app/products/1 \\
+  -H "User-Agent: AI-Crawler/1.0" \\
+  -H "PAYMENT-SIGNATURE: <base64-eip3009>" \\
+  | head -4
+
+# HTTP/2 200
+# payment-response: eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6...
+# {"id":1,"name":"Widget Alpha","price":29.99,...}`}</pre>
+          <div className="px-4 py-2 border-t border-gray-800 flex items-center justify-between">
+            <span className="text-gray-600 text-xs">
+              Or fetch the machine-readable manifest:
+            </span>
+            <code className="text-blue-400 text-xs">
+              curl https://nanocrawl.vercel.app/.well-known/ai-pay
+            </code>
+          </div>
+        </div>
+      </section>
+
       {/* Key properties */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Key Properties</h2>

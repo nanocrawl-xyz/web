@@ -1,140 +1,180 @@
 // Architecture diagram — SVG, dark theme, matches site palette.
-// Shows the full NanoCrawl flow: x402 round-trip, Circle Gateway on Arc,
-// dual withdrawal paths. Designed for Circle DevRel audience.
+// Shows: standards (x402, robots.txt), SDK/toolkit layer, MCP as a skill,
+// Circle Gateway on Arc, dual withdrawal paths. For Circle DevRel audience.
 
 export default function ArchDiagram() {
   return (
     <div className="w-full overflow-x-auto">
       <svg
-        viewBox="0 0 860 430"
+        viewBox="0 0 900 500"
         className="w-full"
-        style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 11 }}
+        style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace' }}
         aria-label="NanoCrawl architecture diagram"
       >
         <defs>
-          {/* Arrowhead markers */}
-          <marker id="a-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#60a5fa" />
-          </marker>
-          <marker id="a-amber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#fbbf24" />
-          </marker>
-          <marker id="a-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#34d399" />
-          </marker>
-          <marker id="a-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa" />
-          </marker>
-          <marker id="a-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#6b7280" />
-          </marker>
+          <marker id="a-blue"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#60a5fa" /></marker>
+          <marker id="a-amber"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#fbbf24" /></marker>
+          <marker id="a-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#34d399" /></marker>
+          <marker id="a-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a78bfa" /></marker>
+          <marker id="a-gray"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6b7280" /></marker>
         </defs>
 
+        {/* ── STANDARDS ROW (top banner) ───────────────────────── */}
+        <text x="450" y="18" textAnchor="middle" fill="#4b5563" fontSize="9" letterSpacing="2">OPEN STANDARDS</text>
+
+        {/* robots.txt pill */}
+        <rect x="90" y="22" width="110" height="20" rx="4" fill="#1f2937" stroke="#374151" strokeWidth="1" />
+        <text x="145" y="35" textAnchor="middle" fill="#9ca3af" fontSize="9">robots.txt  (discovery)</text>
+
+        {/* x402 pill */}
+        <rect x="310" y="22" width="90" height="20" rx="4" fill="#1e3a5f" stroke="#3b82f6" strokeWidth="1" />
+        <text x="355" y="35" textAnchor="middle" fill="#93c5fd" fontSize="9" fontWeight="bold">HTTP 402 / x402</text>
+
+        {/* EIP-3009 pill */}
+        <rect x="465" y="22" width="90" height="20" rx="4" fill="#1f2937" stroke="#374151" strokeWidth="1" />
+        <text x="510" y="35" textAnchor="middle" fill="#9ca3af" fontSize="9">EIP-3009  (auth)</text>
+
+        {/* CCTP pill */}
+        <rect x="660" y="22" width="90" height="20" rx="4" fill="#1f2937" stroke="#374151" strokeWidth="1" />
+        <text x="705" y="35" textAnchor="middle" fill="#9ca3af" fontSize="9">CCTP  (cross-chain)</text>
+
         {/* ── BUYER box ─────────────────────────────────────────── */}
-        <rect x="10" y="15" width="235" height="155" rx="10"
+        <rect x="10" y="55" width="255" height="190" rx="10"
           fill="#0c1829" stroke="#3b82f6" strokeWidth="1.5" />
-        <text x="117" y="36" textAnchor="middle" fill="#93c5fd" fontWeight="bold" letterSpacing="1">BUYER / AGENT</text>
-        <line x1="10" y1="44" x2="245" y2="44" stroke="#3b82f6" strokeWidth="0.5" />
-        <text x="25" y="62" fill="#e5e7eb">AI Agent</text>
-        <text x="38" y="76" fill="#6b7280">Claude · GPT · custom script</text>
-        <text x="25" y="97" fill="#e5e7eb">MCP Server</text>
-        <text x="38" y="111" fill="#6b7280">GatewayClient (Circle SDK)</text>
-        <text x="38" y="125" fill="#6b7280">wallet · budget · receipts</text>
-        <text x="25" y="146" fill="#6b7280" fontStyle="italic">reads robots.txt payment policy</text>
-        <text x="25" y="160" fill="#6b7280" fontStyle="italic">caches per-domain payment terms</text>
+
+        {/* AI Agent sub-section */}
+        <text x="137" y="75" textAnchor="middle" fill="#93c5fd" fontWeight="bold" fontSize="11" letterSpacing="1">AI AGENT</text>
+        <text x="137" y="90" textAnchor="middle" fill="#6b7280" fontSize="10">Claude · GPT · any MCP client</text>
+
+        <line x1="10" y1="97" x2="265" y2="97" stroke="#1e40af" strokeWidth="0.5" strokeDasharray="3,3" />
+
+        {/* MCP Skill sub-section */}
+        <text x="137" y="113" textAnchor="middle" fill="#93c5fd" fontWeight="bold" fontSize="11" letterSpacing="1">MCP SKILL</text>
+
+        {/* Skill box */}
+        <rect x="25" y="119" width="225" height="30" rx="5" fill="#0f2040" stroke="#3b82f6" strokeWidth="1" />
+        <text x="50" y="138" fill="#60a5fa" fontSize="11" fontWeight="bold">fetch_paid_page</text>
+        <text x="207" y="138" fill="#6b7280" fontSize="10">(url)</text>
+
+        <text x="25" y="163" fill="#6b7280" fontSize="10">① read robots.txt → discover price</text>
+        <text x="25" y="177" fill="#6b7280" fontSize="10">② sign EIP-3009 off-chain — 0 gas</text>
+        <text x="25" y="191" fill="#6b7280" fontSize="10">③ attach Payment-Signature header</text>
+        <text x="25" y="205" fill="#6b7280" fontSize="10">④ return content to agent</text>
+
+        {/* SDK label */}
+        <text x="137" y="232" textAnchor="middle" fill="#374151" fontSize="9">SDK: @circle-fin/x402-batching/client</text>
 
         {/* ── PUBLISHER box ─────────────────────────────────────── */}
-        <rect x="615" y="15" width="235" height="155" rx="10"
+        <rect x="635" y="55" width="255" height="190" rx="10"
           fill="#0c1f17" stroke="#10b981" strokeWidth="1.5" />
-        <text x="732" y="36" textAnchor="middle" fill="#6ee7b7" fontWeight="bold" letterSpacing="1">NANOCRAWL PUBLISHER</text>
-        <line x1="615" y1="44" x2="850" y2="44" stroke="#10b981" strokeWidth="0.5" />
-        <text x="630" y="62" fill="#e5e7eb">Next.js Middleware</text>
-        <text x="643" y="76" fill="#6b7280">bot detect · 402 or pass-through</text>
-        <text x="630" y="97" fill="#e5e7eb">verify-and-serve</text>
-        <text x="643" y="111" fill="#6b7280">settle · record · respond</text>
-        <text x="630" y="132" fill="#e5e7eb">Merchant Dashboard</text>
-        <text x="643" y="146" fill="#6b7280">live revenue · withdraw</text>
-        <text x="643" y="160" fill="#6b7280">Lifetime Earned = balance + withdrawn</text>
+
+        <text x="762" y="75" textAnchor="middle" fill="#6ee7b7" fontWeight="bold" fontSize="11" letterSpacing="1">PUBLISHER</text>
+        <text x="762" y="90" textAnchor="middle" fill="#6b7280" fontSize="10">any website · API · content store</text>
+
+        <line x1="635" y1="97" x2="890" y2="97" stroke="#065f46" strokeWidth="0.5" strokeDasharray="3,3" />
+
+        <text x="762" y="113" textAnchor="middle" fill="#6ee7b7" fontWeight="bold" fontSize="11" letterSpacing="1">TOOLKITS</text>
+
+        {/* Next.js toolkit box */}
+        <rect x="650" y="119" width="105" height="42" rx="5" fill="#0a2010" stroke="#10b981" strokeWidth="1" />
+        <text x="702" y="135" textAnchor="middle" fill="#34d399" fontSize="10" fontWeight="bold">Next.js</text>
+        <text x="702" y="149" textAnchor="middle" fill="#6b7280" fontSize="9">1 middleware import</text>
+        <text x="702" y="160" textAnchor="middle" fill="#6b7280" fontSize="9">any route, any price</text>
+
+        {/* CF Worker toolkit box */}
+        <rect x="770" y="119" width="105" height="42" rx="5" fill="#0a2010" stroke="#10b981" strokeWidth="1" />
+        <text x="822" y="135" textAnchor="middle" fill="#34d399" fontSize="10" fontWeight="bold">CF Worker</text>
+        <text x="822" y="149" textAnchor="middle" fill="#6b7280" fontSize="9">1-file template</text>
+        <text x="822" y="160" textAnchor="middle" fill="#6b7280" fontSize="9">any origin / R2 / API</text>
+
+        <text x="762" y="180" textAnchor="middle" fill="#6b7280" fontSize="10">verify-and-serve · record · dashboard</text>
+        <text x="762" y="193" textAnchor="middle" fill="#6b7280" fontSize="10">idempotency · human pass-through</text>
+
+        <text x="762" y="232" textAnchor="middle" fill="#374151" fontSize="9">SDK: @circle-fin/x402-batching/server</text>
 
         {/* ── PROTOCOL ARROWS (centre column) ───────────────────── */}
-        {/* 1. GET request → */}
-        <line x1="245" y1="60" x2="615" y2="60"
-          stroke="#60a5fa" strokeWidth="1.2" markerEnd="url(#a-blue)" />
-        <text x="430" y="53" textAnchor="middle" fill="#93c5fd" fontSize="10">① GET /products/1</text>
+        {/* x402 label above arrows */}
+        <text x="450" y="72" textAnchor="middle" fill="#3b82f6" fontSize="10" fontWeight="bold">x402 Protocol</text>
 
-        {/* 2. 402 ← */}
-        <line x1="615" y1="82" x2="245" y2="82"
-          stroke="#fbbf24" strokeWidth="1.2" markerEnd="url(#a-amber)" />
-        <text x="430" y="75" textAnchor="middle" fill="#fbbf24" fontSize="10">② 402  PAYMENT-REQUIRED  (price · network · payTo)</text>
+        {/* GET → */}
+        <line x1="265" y1="100" x2="635" y2="100" stroke="#60a5fa" strokeWidth="1.2" markerEnd="url(#a-blue)" />
+        <text x="450" y="95" textAnchor="middle" fill="#93c5fd" fontSize="10">GET /products/1</text>
 
-        {/* 3. sign annotation */}
-        <text x="430" y="101" textAnchor="middle" fill="#9ca3af" fontSize="10" fontStyle="italic">
-          ③ sign EIP-3009 off-chain — zero gas, no on-chain tx
-        </text>
+        {/* 402 ← */}
+        <line x1="635" y1="122" x2="265" y2="122" stroke="#fbbf24" strokeWidth="1.2" markerEnd="url(#a-amber)" />
+        <text x="450" y="117" textAnchor="middle" fill="#fbbf24" fontSize="10">402  PAYMENT-REQUIRED</text>
 
-        {/* 4. retry → */}
-        <line x1="245" y1="120" x2="615" y2="120"
-          stroke="#60a5fa" strokeWidth="1.2" markerEnd="url(#a-blue)" />
-        <text x="430" y="113" textAnchor="middle" fill="#93c5fd" fontSize="10">④ GET + Payment-Signature: &lt;base64&gt;</text>
+        {/* robots.txt arrow — discovery */}
+        <path d="M145 55 C145 42 355 42 355 22" stroke="#4b5563" strokeWidth="0.8" fill="none" strokeDasharray="3,2" markerEnd="url(#a-gray)" />
 
-        {/* 5. 200 ← */}
-        <line x1="615" y1="142" x2="245" y2="142"
-          stroke="#34d399" strokeWidth="1.2" markerEnd="url(#a-green)" />
-        <text x="430" y="135" textAnchor="middle" fill="#34d399" fontSize="10">⑤ 200  content + Payment-Response  X-NanoCrawl-Cached</text>
+        {/* Shortcut bypass: bracket on left of GET/402 pair + label */}
+        {/* vertical bracket covering the GET→402 round-trip */}
+        <line x1="272" y1="93" x2="272" y2="130" stroke="#374151" strokeWidth="0.8" />
+        <line x1="272" y1="93"  x2="276" y2="93"  stroke="#374151" strokeWidth="0.8" />
+        <line x1="272" y1="130" x2="276" y2="130" stroke="#374151" strokeWidth="0.8" />
+        {/* dashed skip arrow from bottom of bracket to GET+sig row */}
+        <line x1="272" y1="130" x2="272" y2="157" stroke="#374151" strokeWidth="0.8" strokeDasharray="3,2" markerEnd="url(#a-gray)" />
+        {/* label */}
+        <text x="268" y="113" textAnchor="end" fill="#6b7280" fontSize="8.5" fontStyle="italic">skip if</text>
+        <text x="268" y="124" textAnchor="end" fill="#6b7280" fontSize="8.5" fontStyle="italic">robots.txt</text>
+        <text x="268" y="135" textAnchor="end" fill="#6b7280" fontSize="8.5" fontStyle="italic">pre-read</text>
+        <text x="268" y="153" textAnchor="end" fill="#fbbf24" fontSize="8" fontStyle="italic">⚡ 1 RTT saved</text>
+
+        {/* sign annotation */}
+        <text x="450" y="145" textAnchor="middle" fill="#9ca3af" fontSize="10" fontStyle="italic">sign EIP-3009 off-chain — zero gas</text>
+
+        {/* GET + sig → */}
+        <line x1="265" y1="163" x2="635" y2="163" stroke="#60a5fa" strokeWidth="1.2" markerEnd="url(#a-blue)" />
+        <text x="450" y="157" textAnchor="middle" fill="#93c5fd" fontSize="10">GET + Payment-Signature: &lt;base64&gt;</text>
+
+        {/* 200 ← */}
+        <line x1="635" y1="185" x2="265" y2="185" stroke="#34d399" strokeWidth="1.2" markerEnd="url(#a-green)" />
+        <text x="450" y="179" textAnchor="middle" fill="#34d399" fontSize="10">200  content  +  Payment-Response</text>
 
         {/* ── CIRCLE GATEWAY box ────────────────────────────────── */}
-        <rect x="185" y="218" width="490" height="115" rx="10"
+        <rect x="195" y="280" width="510" height="110" rx="10"
           fill="#120c1f" stroke="#7c3aed" strokeWidth="1.5" />
-        <text x="430" y="239" textAnchor="middle" fill="#c4b5fd" fontWeight="bold" letterSpacing="1">CIRCLE GATEWAY — ARC TESTNET</text>
-        <line x1="185" y1="246" x2="675" y2="246" stroke="#7c3aed" strokeWidth="0.5" />
+        <text x="450" y="300" textAnchor="middle" fill="#c4b5fd" fontWeight="bold" fontSize="11" letterSpacing="1">CIRCLE GATEWAY — ARC TESTNET</text>
+        <line x1="195" y1="307" x2="705" y2="307" stroke="#7c3aed" strokeWidth="0.5" />
 
-        {/* Three columns inside gateway */}
-        <text x="295" y="267" textAnchor="middle" fill="#e5e7eb">EIP-3009</text>
-        <text x="295" y="281" textAnchor="middle" fill="#6b7280">Off-chain authorization</text>
-        <text x="295" y="295" textAnchor="middle" fill="#6b7280">No gas per payment</text>
+        <text x="310" y="326" textAnchor="middle" fill="#e5e7eb" fontSize="11">Batch settlement</text>
+        <text x="310" y="340" textAnchor="middle" fill="#6b7280" fontSize="10">Per-request EIP-3009 sigs</text>
+        <text x="310" y="354" textAnchor="middle" fill="#6b7280" fontSize="10">aggregated on-chain → low cost</text>
 
-        <text x="430" y="267" textAnchor="middle" fill="#e5e7eb">Batch settlement</text>
-        <text x="430" y="281" textAnchor="middle" fill="#6b7280">Payments aggregated</text>
-        <text x="430" y="295" textAnchor="middle" fill="#6b7280">Settled on Arc periodically</text>
+        <text x="450" y="326" textAnchor="middle" fill="#fbbf24" fontSize="11">USDC = gas ★</text>
+        <text x="450" y="340" textAnchor="middle" fill="#6b7280" fontSize="10">Arc native currency</text>
+        <text x="450" y="354" textAnchor="middle" fill="#6b7280" fontSize="10">merchants pay 0 to receive</text>
 
-        <text x="568" y="267" textAnchor="middle" fill="#fbbf24">USDC = gas ★</text>
-        <text x="568" y="281" textAnchor="middle" fill="#6b7280">Arc native currency</text>
-        <text x="568" y="295" textAnchor="middle" fill="#6b7280">No separate gas token</text>
+        <text x="592" y="326" textAnchor="middle" fill="#e5e7eb" fontSize="11">Trust-minimised</text>
+        <text x="592" y="340" textAnchor="middle" fill="#6b7280" fontSize="10">Cryptographic, not accounting</text>
+        <text x="592" y="354" textAnchor="middle" fill="#6b7280" fontSize="10">verifiable per request</text>
 
-        {/* Separator between columns */}
-        <line x1="358" y1="254" x2="358" y2="308" stroke="#7c3aed" strokeWidth="0.4" strokeDasharray="3,3" />
-        <line x1="502" y1="254" x2="502" y2="308" stroke="#7c3aed" strokeWidth="0.4" strokeDasharray="3,3" />
+        <line x1="380" y1="314" x2="380" y2="368" stroke="#7c3aed" strokeWidth="0.4" strokeDasharray="3,3" />
+        <line x1="520" y1="314" x2="520" y2="368" stroke="#7c3aed" strokeWidth="0.4" strokeDasharray="3,3" />
 
-        {/* Vertical arrow: publisher settle → gateway */}
-        <line x1="732" y1="170" x2="672" y2="218"
-          stroke="#6b7280" strokeWidth="1" markerEnd="url(#a-gray)" strokeDasharray="4,3" />
-        <text x="730" y="200" textAnchor="middle" fill="#6b7280" fontSize="9">POST /settle</text>
+        {/* Arrow: publisher → settle */}
+        <line x1="762" y1="245" x2="700" y2="280"
+          stroke="#6b7280" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#a-gray)" />
+        <text x="760" y="268" textAnchor="middle" fill="#6b7280" fontSize="9">POST /settle</text>
 
-        {/* ── WITHDRAWAL boxes ──────────────────────────────────── */}
-        {/* Arrow: gateway → arc withdrawal */}
-        <line x1="340" y1="333" x2="260" y2="368"
-          stroke="#a78bfa" strokeWidth="1.2" markerEnd="url(#a-purple)" />
+        {/* ── WITHDRAWAL ────────────────────────────────────────── */}
+        <text x="450" y="412" textAnchor="middle" fill="#6b7280" fontSize="9" fontStyle="italic">withdraw()</text>
 
-        {/* Arrow: gateway → cctp withdrawal */}
-        <line x1="520" y1="333" x2="580" y2="368"
-          stroke="#a78bfa" strokeWidth="1.2" markerEnd="url(#a-purple)" />
+        <line x1="345" y1="390" x2="230" y2="422" stroke="#6d4fb5" strokeWidth="0.8" strokeDasharray="3,2" markerEnd="url(#a-purple)" />
+        <line x1="555" y1="390" x2="650" y2="422" stroke="#6d4fb5" strokeWidth="0.8" strokeDasharray="3,2" markerEnd="url(#a-purple)" />
 
-        {/* withdraw() label */}
-        <text x="430" y="350" textAnchor="middle" fill="#9ca3af" fontSize="10" fontStyle="italic">withdraw()</text>
+        {/* Arc wallet — single muted box */}
+        <rect x="100" y="422" width="180" height="44" rx="6" fill="#0e0a1a" stroke="#4c1d95" strokeWidth="0.8" />
+        <text x="190" y="439" textAnchor="middle" fill="#a78bfa" fontSize="10" fontWeight="bold">Arc Wallet</text>
+        <text x="190" y="452" textAnchor="middle" fill="#4b5563" fontSize="9">same-chain · USDC=gas ★</text>
+        <text x="190" y="463" textAnchor="middle" fill="#4b5563" fontSize="9">instant</text>
 
-        {/* Arc wallet box */}
-        <rect x="90" y="368" width="225" height="52" rx="8"
-          fill="#120c1f" stroke="#7c3aed" strokeWidth="1.2" />
-        <text x="202" y="386" textAnchor="middle" fill="#c4b5fd" fontWeight="bold">Arc Wallet</text>
-        <text x="202" y="400" textAnchor="middle" fill="#6b7280">Same-chain · instant</text>
-        <text x="202" y="413" textAnchor="middle" fill="#fbbf24" fontSize="10">USDC pays gas ★</text>
-
-        {/* CCTP box */}
-        <rect x="545" y="368" width="225" height="52" rx="8"
-          fill="#120c1f" stroke="#7c3aed" strokeWidth="1.2" />
-        <text x="657" y="386" textAnchor="middle" fill="#c4b5fd" fontWeight="bold">Base · Unichain · …</text>
-        <text x="657" y="400" textAnchor="middle" fill="#6b7280">CCTP: burn on Arc</text>
-        <text x="657" y="413" textAnchor="middle" fill="#6b7280">→ mint on destination</text>
+        {/* CCTP — stacked boxes suggesting multiple destination chains */}
+        <rect x="618" y="430" width="172" height="36" rx="5" fill="#0c0a14" stroke="#3b1f6a" strokeWidth="0.7" />
+        <rect x="613" y="426" width="172" height="36" rx="5" fill="#0e0b18" stroke="#4c1d95" strokeWidth="0.7" />
+        <rect x="608" y="422" width="172" height="36" rx="5" fill="#0f0c1c" stroke="#5b21b6" strokeWidth="0.8" />
+        <text x="694" y="437" textAnchor="middle" fill="#a78bfa" fontSize="10" fontWeight="bold">Base · Unichain · …</text>
+        <text x="694" y="450" textAnchor="middle" fill="#4b5563" fontSize="9">CCTP: burn Arc → mint dest</text>
       </svg>
     </div>
   )
