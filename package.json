@@ -12,6 +12,8 @@
     "smoke": "bash scripts/smoke-test.sh",
     "crawl": "npx tsx scripts/test-crawler.ts",
     "crawl:debug": "npx tsx scripts/test-crawler.ts --debug",
+    "crawl:vercel": "CRAWLER_TARGET_URL=https://nanocrawl.vercel.app npx tsx scripts/test-crawler.ts",
+    "crawl:vercel:debug": "CRAWLER_TARGET_URL=https://nanocrawl.vercel.app npx tsx scripts/test-crawler.ts --debug",
     "smoke:debug": "DEBUG=1 bash scripts/smoke-test.sh"
   },
   "dependencies": {
